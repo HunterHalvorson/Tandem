@@ -6,7 +6,7 @@ const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 export const supabase = url && key ? createClient(url, key, { auth: { flowType: 'pkce' } }) : null
 
-export interface SharedSnapshot extends Pick<Database, 'events' | 'groups' | 'memberships' | 'registrations' | 'messages'> {
+export interface SharedSnapshot extends Pick<Database, 'events' | 'groups' | 'memberships' | 'registrations' | 'messages' | 'reviews'> {
   profiles: { id: string; displayName: string; showAttendance: boolean }[]
   eventCounts: Record<string, EventCounts>
   groupMessages: GroupMessage[]

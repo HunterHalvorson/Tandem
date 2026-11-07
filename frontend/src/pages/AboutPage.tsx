@@ -45,7 +45,7 @@ export default function AboutPage() {
             </h3>
             <List
               items={[
-                ...(shared ? ['Reviews, reports and most profile preferences stay in this browser'] : [
+                ...(shared ? ['Reports and most profile preferences stay in this browser'] : [
                   'Demo accounts and email sign-in are simulated. Google sign-in is available when configured',
                   'Demo data and live chat sync between tabs in this browser',
                   'Seeded events, members, reviews and messages are fictional',

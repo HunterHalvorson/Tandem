@@ -56,7 +56,7 @@ export interface Actions {
   cancelEvent(eventId: string, reason: string): Promise<boolean>
   sendMessage(eventId: string, body: string, announcement?: boolean): Promise<boolean>
   report(targetType: Report['targetType'], targetId: string, reason: ReportReason, details: string): boolean
-  submitReview(eventId: string, input: ReviewInput): boolean
+  submitReview(eventId: string, input: ReviewInput): Promise<boolean>
   joinGroup(groupId: string): Promise<boolean>
   leaveGroup(groupId: string): Promise<boolean>
   createGroup(input: { name: string; description: string; category: CategoryId; quadrant: Quadrant }): Promise<string | null>
@@ -103,7 +103,12 @@ export function AppStoreProvider({ children, adapter = shared ? sharedPreference
       registrations: snapshot?.registrations ?? [],
       memberships: snapshot?.memberships ?? [],
       messages: snapshot?.messages ?? [],
-      reviews: local.reviews.filter((review) => review.userId === currentId),
+      reviews: [
+        ...(snapshot?.reviews ?? []),
+        ...local.reviews.filter((review) => review.userId === currentId && !snapshot?.reviews?.some(
+          (sharedReview) => sharedReview.eventId === review.eventId && sharedReview.userId === currentId,
+        )),
+      ],
       reports: local.reports.filter((report) => report.reporterId === currentId),
     }
   }, [local, currentId, snapshot])
@@ -139,7 +144,7 @@ export function AppStoreProvider({ children, adapter = shared ? sharedPreference
       const preferences = shared ? {
         ...localRef.current,
         users: [...localRef.current.users.filter((u) => u.id !== sessionRef.current), ...next.users.filter((u) => u.id === sessionRef.current)],
-        reviews: [...localRef.current.reviews.filter((r) => r.userId !== sessionRef.current), ...next.reviews],
+        reviews: localRef.current.reviews.filter((review) => review.userId !== sessionRef.current || getUser(next, review.userId)),
         reports: [...localRef.current.reports.filter((r) => r.reporterId !== sessionRef.current), ...next.reports],
       } : next
       localRef.current = preferences
@@ -313,7 +318,17 @@ export function AppStoreProvider({ children, adapter = shared ? sharedPreference
         : ok(run((d, at) => ({ db: sendMessage(d, { eventId, userId: requireSession(), body, announcement }, at), result: null }))),
       report: (targetType, targetId, reason, details) =>
         ok(run((d, at) => ({ db: reportContent(d, { targetType, targetId, reporterId: requireSession(), reason, details }, at), result: null }))),
-      submitReview: (eventId, input) => ok(run((d, at) => ({ db: submitReview(d, eventId, requireSession(), input, at), result: null }))),
+      submitReview: async (eventId, input) => shared
+        ? write('rate_event', {
+          event_key: eventId,
+          overall: input.overall,
+          organization: input.organization,
+          accuracy: input.accuracy,
+          accessibility_accuracy: input.accessibilityAccuracy,
+          would_return: input.wouldReturn,
+          comment: input.comment,
+        })
+        : ok(run((d, at) => ({ db: submitReview(d, eventId, requireSession(), input, at), result: null }))),
       joinGroup: async (groupId) => shared ? write('membership', { group_key: groupId, joining: true }) : ok(run((d, at) => ({ db: joinGroup(d, groupId, requireSession(), at), result: null }))),
       leaveGroup: async (groupId) => shared ? write('membership', { group_key: groupId, joining: false }) : ok(run((d) => ({ db: leaveGroup(d, groupId, requireSession()), result: null }))),
       createGroup: (input) => remote(() => sharedRpc<string>('create_group', input)),

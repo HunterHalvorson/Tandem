@@ -98,7 +98,40 @@ select pg_temp.assert_true(jsonb_array_length(public.tandem_snapshot('20000000-0
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000004"}', true);
 select public.tandem_event('join', '20000000-0000-4000-8000-000000000001');
 select pg_temp.expect_error($$select public.tandem_event('cancel', '20000000-0000-4000-8000-000000000001')$$, 'You can’t cancel this event.');
+select pg_temp.expect_error(
+  $$select public.tandem_rate_event('20000000-0000-4000-8000-000000000001', 5::smallint, null, null, null, null, '')$$,
+  'Only attendees can rate an event after it has finished.');
 
+reset role;
+update tandem.events set starts_at = now() - interval '2 hours', ends_at = now() - interval '1 hour'
+where id = '20000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000004"}', true);
+select pg_temp.expect_error(
+  $$select public.tandem_rate_event('20000000-0000-4000-8000-000000000001', 5::smallint, null, null, null, null, '')$$,
+  'Confirm your attendance before rating this event.');
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000002"}', true);
+select pg_temp.expect_error(
+  $$select public.tandem_rate_event('20000000-0000-4000-8000-000000000001', 6::smallint, null, null, null, null, '')$$,
+  'Choose a rating from 1 to 5 stars.');
+select public.tandem_rate_event('20000000-0000-4000-8000-000000000001', 5::smallint, null, null, null, null, '');
+select public.tandem_rate_event('20000000-0000-4000-8000-000000000001', 1::smallint, null, null, null, null, '');
+select pg_temp.assert_true(
+  jsonb_array_length(public.tandem_snapshot()->'reviews') = 1
+  and public.tandem_snapshot()->'reviews'->0->>'overall' = '5'
+  and public.tandem_snapshot()->'reviews'->0->>'userId' = '10000000-0000-4000-8000-000000000002',
+  'five-star submission needs no extra feedback and is counted once');
+set local role anon;
+select set_config('request.jwt.claims', '{}', true);
+select pg_temp.assert_true(jsonb_array_length(public.tandem_snapshot()->'reviews') = 0, 'unlisted ratings stay out of the catalog');
+select pg_temp.assert_true(
+  public.tandem_snapshot('20000000-0000-4000-8000-000000000001')->'reviews'->0->>'userId' = '',
+  'other reviewers are anonymous');
+
+reset role;
+update tandem.events set starts_at = now() + interval '30 minutes', ends_at = now() + interval '90 minutes'
+where id = '20000000-0000-4000-8000-000000000001';
+set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000001"}', true);
 select public.tandem_event('cancel', '20000000-0000-4000-8000-000000000001', '{"reason":"Weather"}');
 select pg_temp.expect_error(

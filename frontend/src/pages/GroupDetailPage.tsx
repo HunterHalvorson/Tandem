@@ -1,10 +1,12 @@
 import { ArrowLeft, CalendarPlus, ListChecks, MapPin, UsersRound } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { RatingBadge, VerificationBadge } from '../components/events/EventBits'
+import { PhotoFigure } from '../components/events/PhotoFigure'
 import { GroupDiscussion } from '../components/events/GroupDiscussion'
 import { EventCard } from '../components/events/EventCard'
-import { CategoryCover, CategoryIcon } from '../components/events/visuals'
+import { CategoryIcon } from '../components/events/visuals'
 import { Avatar, Badge, ButtonLink, Card, Container, EmptyState, SectionHeading } from '../components/ui/primitives'
+import { groupPhoto } from '../data/calgaryPhotos'
 import { CATEGORIES } from '../data/categories'
 import { formatMonthDay } from '../lib/dates'
 import { displayName } from '../lib/format'
@@ -26,6 +28,7 @@ export default function GroupDetailPage() {
         <EmptyState title="Group not found" actions={<ButtonLink to="/groups">All groups</ButtonLink>} />
       </Container>
     )
+  const photo = groupPhoto(group.area)
   const organizer = getUser(db, group.organizerId)
   const { upcoming, past } = groupEvents(db, group.id, now)
   const members = db.memberships
@@ -37,7 +40,7 @@ export default function GroupDetailPage() {
       <Link to="/groups" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink">
         <ArrowLeft aria-hidden className="size-4" /> All groups
       </Link>
-      <CategoryCover categoryId={group.categoryId} variant={group.coverVariant} iconSize="lg" className="aspect-[21/6] rounded-card border border-line" />
+      <PhotoFigure photo={photo} className="aspect-[2/1] sm:aspect-[3/1]" />
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <div className="flex flex-wrap gap-2">

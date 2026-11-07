@@ -1,16 +1,14 @@
-import { List, Map as MapIcon, SlidersHorizontal, Sparkles, X } from 'lucide-react'
+import { List, Map as MapIcon, SlidersHorizontal, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { EaseIntoItCard } from '../components/events/EaseIntoItCard'
 import { EventCard } from '../components/events/EventCard'
-import { JoinButton } from '../components/events/EventBits'
 import { FilterPanel } from '../components/filters/FilterPanel'
 import { SmartSearch } from '../components/filters/SmartSearch'
 import { useEventFilters } from '../components/filters/useEventFilters'
 import { Dialog } from '../components/ui/Dialog'
 import { Button, ButtonLink, Container, EmptyState, Select } from '../components/ui/primitives'
 import { cn } from '../lib/cn'
-import { formatEventWhen } from '../lib/dates'
 import { usePageTitle } from '../lib/hooks'
 import { activeFilterChips, activeFilterCount, DEFAULT_FILTERS, filterEvents, SORT_LABEL, sortEvents, sortReference, type SortKey } from '../services/filters'
 import { recommendationScores } from '../services/recommendations'
@@ -46,18 +44,15 @@ export default function DiscoverPage() {
   const count = activeFilterCount(filters)
   const reference = filters.sort === 'closest' ? sortReference(filters, user) : undefined
   const showRecs = !!user && filters.sort === 'recommended'
-  const topPick = showRecs ? sorted.map((e) => recs?.get(e.id)).find((r) => r && r.score > 0) : undefined
 
   return (
     <Container wide className="py-6 sm:py-8">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="mb-1 text-xs font-bold tracking-wider text-brand uppercase">Less scrolling. More doing.</p>
-          <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Discover Calgary</h1>
-          <p className="mt-1 text-muted">Real activities with real people — filtered for what matters to you.</p>
+          <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Calgary events</h1>
         </div>
         <ButtonLink to={{ pathname: '/map', search }} variant="secondary" className="max-sm:hidden">
-          <MapIcon aria-hidden /> Explore Calgary Map
+          <MapIcon aria-hidden /> View map
         </ButtonLink>
       </div>
 
@@ -119,26 +114,6 @@ export default function DiscoverPage() {
 
           {filters.sort === 'closest' && reference && <p className="mb-4 text-sm text-muted">Distances measured from <strong className="text-ink">{reference.label}</strong>. Pick a single quadrant filter to change the reference point.</p>}
 
-          {topPick && (
-            <div className="mb-6 flex flex-col gap-4 rounded-card border border-brand/30 bg-brand-tint/50 p-4 sm:flex-row sm:items-center sm:p-5">
-              <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-brand uppercase">
-                  <Sparkles aria-hidden className="size-4" /> Your best next step
-                </p>
-                <p className="mt-1 text-lg font-bold text-ink">
-                  <Link to={`/events/${topPick.event.id}`} className="hover:text-brand-deep hover:underline">
-                    {topPick.event.title}
-                  </Link>
-                </p>
-                <p className="text-sm text-ink-soft">
-                  {formatEventWhen(topPick.event.startsAt, now)} · {topPick.event.venue.approximate ? topPick.event.venue.area : topPick.event.venue.name}
-                </p>
-                <p className="mt-1 text-sm text-brand-deep">{topPick.explanation}</p>
-              </div>
-              <JoinButton event={topPick.event} size="lg" />
-            </div>
-          )}
-
           {sorted.length === 0 ? (
             <EmptyState
               icon={<SlidersHorizontal aria-hidden />}
@@ -148,11 +123,11 @@ export default function DiscoverPage() {
                   <Button variant="secondary" onClick={() => setFilters({ ...DEFAULT_FILTERS, sort: filters.sort })}>
                     Reset filters
                   </Button>
-                  <ButtonLink to="/events/new">Host this event yourself</ButtonLink>
+                  <ButtonLink to="/events/new">Create an event</ButtonLink>
                 </>
               }
             >
-              Try widening the price or date range — or be the person who starts the group Calgary is missing.
+              Try a wider date range or clear a filter.
             </EmptyState>
           ) : (
             <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-3">

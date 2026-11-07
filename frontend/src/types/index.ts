@@ -253,8 +253,8 @@ export interface EventReview {
   eventId: string
   userId: string
   overall: number
-  organization: number
-  accuracy: number
+  organization: number | null
+  accuracy: number | null
   /** null = "not applicable / didn't need it". */
   accessibilityAccuracy: number | null
   /** "Would you attend another activity with this group?" — aggregated, never shown per person. */

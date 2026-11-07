@@ -54,15 +54,6 @@ export interface EventDraft {
 export type DraftField = keyof EventDraft | 'when' | 'howToFindUs' | 'whatToExpect'
 export type DraftErrors = Partial<Record<DraftField, string>>
 
-/** Which fields belong to which step of the multi-step form (for per-step validation). */
-export const DRAFT_STEP_FIELDS: DraftField[][] = [
-  ['title', 'description', 'categoryId'],
-  ['date', 'startTime', 'endTime', 'when', 'venueId', 'placeName', 'area', 'quadrant', 'lat'],
-  ['price', 'capacity', 'minParticipants', 'whatToExpect', 'howToFindUs'],
-  [],
-  [],
-]
-
 export const EMPTY_FIRST_TIME: FirstTimeInfo = {
   whatToExpect: '',
   whatToBring: '',
@@ -210,11 +201,6 @@ export function validateDraft(draft: EventDraft, now: Date, opts: { registered?:
     if (!draft.firstTime.howToFindUs.trim()) errors.howToFindUs = 'Explain how to find the group on arrival.'
   }
   return errors
-}
-
-export function stepErrors(errors: DraftErrors, step: number): DraftErrors {
-  const fields = DRAFT_STEP_FIELDS[step] ?? []
-  return Object.fromEntries(Object.entries(errors).filter(([k]) => fields.includes(k as DraftField))) as DraftErrors
 }
 
 /** Approximate locations snap to the nearest neighbourhood centroid — the exact spot is never stored. */

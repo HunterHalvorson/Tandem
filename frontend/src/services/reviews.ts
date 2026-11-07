@@ -29,8 +29,8 @@ export function summarize(reviews: EventReview[]): RatingSummary {
   return {
     count: reviews.length,
     average: avg(reviews.map((r) => r.overall)),
-    organization: avg(reviews.map((r) => r.organization)),
-    accuracy: avg(reviews.map((r) => r.accuracy)),
+    organization: avg(reviews.map((r) => r.organization).filter((rating) => rating !== null)),
+    accuracy: avg(reviews.map((r) => r.accuracy).filter((rating) => rating !== null)),
     accessibilityAccuracy: avg(reviews.filter((r) => r.accessibilityAccuracy !== null).map((r) => r.accessibilityAccuracy!)),
     wouldReturnRate: ret.length ? ret.filter((r) => r.wouldReturn).length / ret.length : null,
     sufficient: reviews.length >= MIN_REVIEWS_FOR_RATING,
@@ -64,8 +64,8 @@ export function canReview(db: Database, eventId: string, userId: string | null |
 
 export interface ReviewInput {
   overall: number
-  organization: number
-  accuracy: number
+  organization: number | null
+  accuracy: number | null
   accessibilityAccuracy: number | null
   wouldReturn: boolean | null
   comment: string
@@ -77,8 +77,9 @@ export function submitReview(db: Database, eventId: string, userId: string, inpu
   requireEvent(db, eventId)
   const eligibility = canReview(db, eventId, userId, now)
   if (!eligibility.ok) throw new AppError(eligibility.reason)
-  if (![input.overall, input.organization, input.accuracy].every(validStar)) throw new AppError('Choose 1–5 stars for each rating.')
-  if (input.accessibilityAccuracy !== null && !validStar(input.accessibilityAccuracy)) throw new AppError('Choose 1–5 stars or "Not applicable".')
+  if (!validStar(input.overall) || [input.organization, input.accuracy, input.accessibilityAccuracy].some((rating) => rating !== null && !validStar(rating))) {
+    throw new AppError('Choose a rating from 1 to 5 stars.')
+  }
   if (input.comment.length > 1000) throw new AppError('Keep written feedback under 1,000 characters.')
   const review: EventReview = { id: uid('rev'), eventId, userId, ...input, comment: input.comment.trim(), createdAt: now.toISOString(), isDemo: false }
   return { ...db, reviews: [...db.reviews, review] }

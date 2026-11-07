@@ -81,9 +81,8 @@ export default function SignupPage() {
 
   return (
     <Container className="max-w-xl py-10">
-      <p className="text-xs font-bold tracking-wider text-brand uppercase">Step 1 of 5 · Account</p>
       <h1 className="mt-1 text-3xl font-extrabold text-ink">Join {BRAND.name}</h1>
-      <p className="mt-1 text-muted">Find your people through the things you love doing.</p>
+      <p className="mt-1 text-muted">Create an account to join events and groups.</p>
       {errorList.length > 0 && (
         <div ref={summary} tabIndex={-1} role="alert" className="mt-5 rounded-card border border-brand/40 bg-brand-tint p-4 outline-none">
           <p className="font-bold text-brand-deep">Please fix the following:</p>

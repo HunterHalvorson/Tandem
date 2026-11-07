@@ -138,7 +138,7 @@ export default function SettingsPage() {
             <VerificationFlow />
           </SettingsCard>
 
-          <SettingsCard id="data" title="Your data" description={shared ? "Collaboration data is shared through Supabase. Your profile preferences, reviews and reports are stored in this browser." : `Everything ${BRAND.name} knows about you lives in this browser’s local storage.`}>
+          <SettingsCard id="data" title="Your data" description={shared ? "Collaboration data is shared through Supabase. Your profile preferences, earlier browser-only reviews and reports are stored in this browser." : `Everything ${BRAND.name} knows about you lives in this browser’s local storage.`}>
             <p className="mb-4 rounded-lg bg-mist px-3 py-2 text-sm text-ink-soft">
               <strong className="text-ink">Signed in with:</strong>{' '}
               {user.authProvider === 'google' ? `Google (${user.email})` : user.isDemo ? 'Demo account (simulated sign-in)' : `Email — ${user.email} (simulated sign-in)`}
@@ -203,7 +203,7 @@ export default function SettingsPage() {
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         title="Delete your account?"
-        description={shared ? "Your account, hosted events, groups, registrations and messages will be removed from the shared workspace." : "Your profile, registrations, messages, reviews and hosted events will be permanently removed from this browser."}
+        description={shared ? "Your account, hosted events, groups, registrations, ratings and messages will be removed from the shared workspace." : "Your profile, registrations, messages, reviews and hosted events will be permanently removed from this browser."}
         footer={
           <>
             <Button variant="ghost" onClick={() => setDeleteOpen(false)}>

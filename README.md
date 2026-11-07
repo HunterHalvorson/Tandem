@@ -29,7 +29,7 @@ No API keys, accounts or paid services are needed. Map tiles come from OpenStree
 
 ### Shared workspace with Supabase
 
-1. Create a Supabase project and apply [the collaboration migration](supabase/migrations/20261107000000_collaboration.sql)
+1. Create a Supabase project and apply the [collaboration](supabase/migrations/20261107000000_collaboration.sql) and [activity ratings](supabase/migrations/20261107000100_activity_ratings.sql) migrations in order
    using its SQL Editor or your migration runner. It creates the private collaboration tables, Data API functions
    and the Realtime publication entry.
 2. Enable the Google provider in Supabase Auth and configure the Google OAuth client with the callback URL shown
@@ -45,7 +45,7 @@ No API keys, accounts or paid services are needed. Map tiles come from OpenStree
 
 The shared catalog starts empty. With the Supabase variables unset, Tandem runs its seeded single-browser demo.
 In shared mode, Google sign-in, events, RSVPs, self-reported attendance, group membership and chat use Supabase.
-Each chat shows its latest 100 messages. Reviews, reports and most profile preferences stay in the browser.
+Each chat shows its latest 100 messages. New activity ratings sync across the shared workspace. Reports, earlier browser-only reviews and most profile preferences stay in the browser.
 
 Run the database regression tests on a fresh test project after applying the migration:
 
@@ -86,16 +86,18 @@ expiry in the browser and never stores the token; a production deployment must v
 Use **Settings → Your data → Reset demo data** on the morning of a demo: seeded event dates are generated relative to
 the day you reset. Open a second tab signed in as another demo account to see the group chat update live.
 
+To try ratings immediately, continue as **Alex Rivera** and open **My events → Calgary Tech Coffee Meetup → Rate activity**.
+The meetup is already complete and Alex's attendance is confirmed.
+
 ### 3–5 minute demo script (spec §27)
 
 1. **Problem** — a student just moved to Calgary and doesn't know where to start.
-2. **Onboarding** — *Create account* → New to Calgary → NW → Running, Reading, Hiking → Small groups, Beginner-friendly,
-   Free → finish: three explained recommendations appear immediately.
+2. **Profile setup** — create an account, select NW and a few interests, then choose *Find events* to see personalized suggestions.
 3. **Smart discovery** — *Discover*: drag the price slider, tick *Wheelchair accessible*; try the search box
    “free hiking this weekend in NW” (or the mic).
 4. **Calgary map** — *Explore Calgary Map* → quadrant chip **NW** → click a marker → preview → Join.
 5. **Participation** — join *Bow River Sunrise Run* (count goes 12 → 13), open the group chat, see it on the dashboard.
-6. **Community creation** — *Create Event* → *Book club* template → Next ×4 → Publish → it's in Discover and on the map.
+6. **Community creation** — *Create event* → *Use a template* → *Book club* → Publish → it's in Discover and on the map.
 7. **Accessibility** — toggle **Ease Into It** on Discover and watch smaller, beginner-friendly events rise; open the
    ♿ menu (text size, contrast, readable font); press *Read aloud* on an event.
 8. **Traveller** — switch to **Sam** → *Explore Like a Local* → dates are prefilled → Weekend Planner → *Join all*.
@@ -110,7 +112,7 @@ the day you reset. Open a second tab signed in as another demo account to see th
 |---|---|
 | **Discovery** | Event cards with date, quadrant, price, capacity, host demo-verification, ratings and confirmed accessibility. Filters for price slider (0–$150+), free only, multi-category, quadrant, date presets + custom range, group size, 7 accessibility features, spaces available, verified host, traveller-friendly, indoor/outdoor. Seven sort orders. Plain-language + **voice** search ("quiet book club this weekend"). |
 | **Calgary map** | Leaflet + OpenStreetMap, quadrant overlay (NW/NE/SW/SE), category-icon markers (never colour-only), zoom-aware clustering, popups with Join, fit-to-events, list/map toggle. **Same filter state and logic as the list** (filters live in the URL). Private locations show an area circle, never a pin. |
-| **Events** | 5-step create/edit form with templates, per-step validation and an accessible error summary; public place picker or drop-a-pin; private/residential mode; First-Time Friendly details; tri-state accessibility (confirmed / not yet confirmed / not available); cancel with reason; .ics calendar export; share; read aloud. |
+| **Events** | Single-page create/edit form with templates, optional details and an accessible error summary; public place picker or drop-a-pin; private/residential mode; First-Time Friendly details; tri-state accessibility (confirmed / not yet confirmed / not available); cancel with reason; .ics calendar export; share; read aloud. |
 | **Group chat** | Per-event, attendees + host only; host announcements; participants; leave event; report message; persisted; live across tabs in the same browser. Seeded messages are labelled *Demo message*. |
 | **Explore Like a Local** | Travel mode, travel dates, budget, quadrants → rule-based **Weekend Planner** (real events only, capacity/date/budget-aware, no overlaps), *Join all*, save to dashboard. |
 | **Groups** | 12 persistent community groups with organizers, guidelines, upcoming/past events, join/leave. |
@@ -119,6 +121,10 @@ the day you reset. Open a second tab signed in as another demo account to see th
 | **Accessibility** | Comfort & Access preferences with must-haves, **Ease Into It**, text size, high contrast, reduced motion, Atkinson Hyperlegible font, underline links, read aloud, voice search, skip link, focus management, keyboard-operable map. |
 | **Privacy & trust** | No addresses, passwords, IDs or medical data stored; private-by-default preferences; live “as others see it” profile preview; simulated ID verification badge reads *Demo verified*; export / delete my data; confidential reporting. |
 | **Impact** | Community impact dashboard computed live (demo-labelled), with counters that move as you use the app. |
+
+Event and group cards and detail pages use Calgary photography from Wikimedia Commons. Detail pages show the location
+pictured, photographer, source and license. A labelled Calgary skyline photo appears where there is no matching
+venue or neighbourhood photo. WebP copies are bundled with the app.
 
 ---
 

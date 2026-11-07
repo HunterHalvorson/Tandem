@@ -602,7 +602,30 @@ const KITCHEN_ACCESS: Partial<AccessibilityInfo> = {
   virtual: 'unavailable',
 }
 
+const RATING_DEMO_KEY = 'rating-demo-tech-coffee'
+export const RATING_DEMO_EVENT_ID = `evt-${RATING_DEMO_KEY}`
+
 const EVENT_SEEDS: EventSeed[] = [
+  {
+    key: RATING_DEMO_KEY,
+    host: 'jordan',
+    group: 'student-devs',
+    title: 'Calgary Tech Coffee Meetup',
+    cat: 'tech',
+    venue: 'central-library',
+    day: -1,
+    time: '10:00',
+    minutes: 60,
+    price: 0,
+    capacity: 12,
+    base: 4,
+    attended: ['alex'],
+    beginner: true,
+    traveller: true,
+    setting: 'indoor',
+    access: {},
+    description: 'A casual meetup for sharing projects and swapping tips at Calgary Central Library. Alex already checked in so you can try the rating flow.',
+  },
   {
     key: 'cranston-run-club',
     host: 'priya',

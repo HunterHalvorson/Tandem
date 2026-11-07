@@ -52,59 +52,6 @@ export function FilterPanel({ filters, onChange, className }: { filters: EventFi
         </Button>
       </div>
 
-      <Section title="Price" id="f-price">
-        <label htmlFor="price-slider" className="mb-1 flex items-baseline justify-between text-sm">
-          <span className="text-muted">Maximum cost</span>
-          <span className="font-bold text-ink">{filters.freeOnly ? 'Free only' : filters.maxPrice >= PRICE_MAX ? 'Any price' : filters.maxPrice === 0 ? 'Free' : `Up to $${filters.maxPrice}`}</span>
-        </label>
-        <input
-          id="price-slider"
-          type="range"
-          className="range"
-          min={0}
-          max={PRICE_MAX}
-          step={5}
-          value={filters.freeOnly ? 0 : filters.maxPrice}
-          disabled={filters.freeOnly}
-          style={{ ['--fill' as string]: `${filters.freeOnly ? 0 : pct}%` }}
-          aria-valuetext={filters.maxPrice >= PRICE_MAX ? 'Any price' : `Up to ${filters.maxPrice} dollars`}
-          onChange={(e) => set({ maxPrice: Number(e.target.value) })}
-        />
-        <div aria-hidden className="mt-0.5 flex justify-between text-xs text-muted">
-          <span>$0</span>
-          <span>$75</span>
-          <span>$150+</span>
-        </div>
-        <Switch className="mt-3" checked={filters.freeOnly} onChange={(v) => set({ freeOnly: v })} label="Free only" />
-      </Section>
-
-      <Section title="Category" id="f-cat">
-        <div className="flex flex-wrap gap-2">
-          {cats.map((c) => (
-            <Chip key={c} selected={filters.categories.includes(c)} onToggle={() => set({ categories: toggle(filters.categories, c) })} icon={<CategoryIcon id={c} />}>
-              {CATEGORIES[c].label}
-            </Chip>
-          ))}
-        </div>
-        <button type="button" className="mt-2 text-sm font-semibold text-brand hover:underline" onClick={() => setShowAllCats((s) => !s)} aria-expanded={showAllCats}>
-          {showAllCats ? 'Show fewer categories' : `Show all ${CATEGORY_IDS.length} categories`}
-        </button>
-      </Section>
-
-      <Section title="Calgary quadrant" id="f-quad">
-        <div className="flex flex-wrap gap-2">
-          <Chip selected={filters.quadrants.length === 0} onToggle={() => set({ quadrants: [] })}>
-            All Calgary
-          </Chip>
-          {QUADRANTS.map((q) => (
-            <Chip key={q} selected={filters.quadrants.includes(q)} onToggle={() => set({ quadrants: toggle(filters.quadrants, q) })}>
-              <span aria-hidden>{q}</span>
-              <span className="sr-only">{QUADRANT_INFO[q].name}</span>
-            </Chip>
-          ))}
-        </div>
-      </Section>
-
       <Section title="Date" id="f-date">
         <div role="radiogroup" aria-labelledby="f-date" className="grid grid-cols-2 gap-2">
           {(Object.keys(DATE_PRESET_LABEL) as DatePreset[]).map((d) => (
@@ -134,14 +81,57 @@ export function FilterPanel({ filters, onChange, className }: { filters: EventFi
         )}
       </Section>
 
-      <Section title="Group size" id="f-size">
+      <Section title="Category" id="f-cat">
         <div className="flex flex-wrap gap-2">
-          {SIZES.map((s) => (
-            <Chip key={s} selected={filters.sizes.includes(s)} onToggle={() => set({ sizes: toggle(filters.sizes, s) })}>
-              {SIZE_LABEL[s]}
+          {cats.map((c) => (
+            <Chip key={c} selected={filters.categories.includes(c)} onToggle={() => set({ categories: toggle(filters.categories, c) })} icon={<CategoryIcon id={c} />}>
+              {CATEGORIES[c].label}
             </Chip>
           ))}
         </div>
+        <button type="button" className="mt-2 text-sm font-semibold text-brand hover:underline" onClick={() => setShowAllCats((s) => !s)} aria-expanded={showAllCats}>
+          {showAllCats ? 'Show fewer categories' : `Show all ${CATEGORY_IDS.length} categories`}
+        </button>
+      </Section>
+
+      <Section title="Calgary quadrant" id="f-quad">
+        <div className="flex flex-wrap gap-2">
+          <Chip selected={filters.quadrants.length === 0} onToggle={() => set({ quadrants: [] })}>
+            All Calgary
+          </Chip>
+          {QUADRANTS.map((q) => (
+            <Chip key={q} selected={filters.quadrants.includes(q)} onToggle={() => set({ quadrants: toggle(filters.quadrants, q) })}>
+              <span aria-hidden>{q}</span>
+              <span className="sr-only">{QUADRANT_INFO[q].name}</span>
+            </Chip>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Price" id="f-price">
+        <label htmlFor="price-slider" className="mb-1 flex items-baseline justify-between text-sm">
+          <span className="text-muted">Maximum cost</span>
+          <span className="font-bold text-ink">{filters.freeOnly ? 'Free only' : filters.maxPrice >= PRICE_MAX ? 'Any price' : filters.maxPrice === 0 ? 'Free' : `Up to $${filters.maxPrice}`}</span>
+        </label>
+        <input
+          id="price-slider"
+          type="range"
+          className="range"
+          min={0}
+          max={PRICE_MAX}
+          step={5}
+          value={filters.freeOnly ? 0 : filters.maxPrice}
+          disabled={filters.freeOnly}
+          style={{ ['--fill' as string]: `${filters.freeOnly ? 0 : pct}%` }}
+          aria-valuetext={filters.maxPrice >= PRICE_MAX ? 'Any price' : `Up to ${filters.maxPrice} dollars`}
+          onChange={(e) => set({ maxPrice: Number(e.target.value) })}
+        />
+        <div aria-hidden className="mt-0.5 flex justify-between text-xs text-muted">
+          <span>$0</span>
+          <span>$75</span>
+          <span>$150+</span>
+        </div>
+        <Switch className="mt-3" checked={filters.freeOnly} onChange={(v) => set({ freeOnly: v })} label="Free only" />
       </Section>
 
       <Section title="Accessibility & comfort" id="f-access">
@@ -163,27 +153,40 @@ export function FilterPanel({ filters, onChange, className }: { filters: EventFi
         </ul>
       </Section>
 
-      <Section title="More options" id="f-other">
-        <div className="space-y-3">
-          <Checkbox checked={filters.availableOnly} onChange={(v) => set({ availableOnly: v })} label="Spaces available" />
-          <Checkbox checked={filters.verifiedHost} onChange={(v) => set({ verifiedHost: v })} label="Demo-verified host" description="Host completed the simulated verification flow." />
-          <Checkbox checked={filters.travellerFriendly} onChange={(v) => set({ travellerFriendly: v })} label="Traveller-friendly" />
-          <div>
-            <p className="mb-1.5 text-sm font-semibold text-ink" id="setting-label">Setting</p>
-            <Segmented
-              label="Indoor or outdoor"
-              className="w-full"
-              value={filters.setting}
-              onChange={(v) => set({ setting: v })}
-              options={[
-                { value: 'any', label: 'Any' },
-                { value: 'indoor', label: 'Indoor' },
-                { value: 'outdoor', label: 'Outdoor' },
-              ]}
-            />
+      <details className="border-t border-line py-2">
+        <summary className="cursor-pointer py-2 text-sm font-semibold">More filters</summary>
+        <Section title="Group size" id="f-size">
+          <div className="flex flex-wrap gap-2">
+            {SIZES.map((s) => (
+              <Chip key={s} selected={filters.sizes.includes(s)} onToggle={() => set({ sizes: toggle(filters.sizes, s) })}>
+                {SIZE_LABEL[s]}
+              </Chip>
+            ))}
           </div>
-        </div>
-      </Section>
+        </Section>
+
+        <Section title="Event options" id="f-other">
+          <div className="space-y-3">
+            <Checkbox checked={filters.availableOnly} onChange={(v) => set({ availableOnly: v })} label="Spaces available" />
+            <Checkbox checked={filters.verifiedHost} onChange={(v) => set({ verifiedHost: v })} label="Demo-verified host" description="Host completed the simulated verification flow." />
+            <Checkbox checked={filters.travellerFriendly} onChange={(v) => set({ travellerFriendly: v })} label="Traveller-friendly" />
+            <div>
+              <p className="mb-1.5 text-sm font-semibold text-ink" id="setting-label">Setting</p>
+              <Segmented
+                label="Indoor or outdoor"
+                className="w-full"
+                value={filters.setting}
+                onChange={(v) => set({ setting: v })}
+                options={[
+                  { value: 'any', label: 'Any' },
+                  { value: 'indoor', label: 'Indoor' },
+                  { value: 'outdoor', label: 'Outdoor' },
+                ]}
+              />
+            </div>
+          </div>
+        </Section>
+      </details>
     </div>
   )
 }
