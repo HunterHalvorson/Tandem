@@ -83,10 +83,10 @@ function EditProfile({ user }: { user: User }) {
   const [bio, setBio] = useState(user.bio)
   const [error, setError] = useState('')
 
-  const saveBasics = () => {
+  const saveBasics = async () => {
     if (!first.trim()) return setError('Your first name is required.')
     setError('')
-    if (actions.updateProfile({ firstName: first.trim(), lastName: last.trim(), bio: bio.trim() })) toast('Profile saved.')
+    if (await actions.updateProfile({ firstName: first.trim(), lastName: last.trim(), bio: bio.trim() })) toast('Profile saved.')
   }
 
   return (
@@ -109,7 +109,7 @@ function EditProfile({ user }: { user: User }) {
                   if (!file) return
                   try {
                     const photo = await toAvatarDataUrl(file)
-                    if (actions.updateProfile({ avatar: { ...user.avatar, photo } })) toast('Photo updated. It’s stored only in this browser.')
+                    if (await actions.updateProfile({ avatar: { ...user.avatar, photo } })) toast('Photo updated. It’s stored only in this browser.')
                   } catch {
                     toast('Sorry, that image couldn’t be read.', { tone: 'error' })
                   }

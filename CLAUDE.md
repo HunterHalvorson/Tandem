@@ -104,6 +104,8 @@ test/       vitest specs for services
 3. **2026-11-07** — "should be able to create profile, and login with google accounts"
 4. **2026-11-07** — "the product is called "Tandem"" → renamed everywhere (was "TNadem" from the spec PDF).
 
+5. **2026-11-07** — Implement real-time chat, event attendance and group collaboration with Supabase on a separate branch. Test and commit locally, then get approval before pushing.
+
 ## 8. Change log
 
 - **2026-11-07 (session 1)** — Built the whole app on top of the teammate's Vite/React scaffold in `frontend/`
@@ -145,6 +147,10 @@ test/       vitest specs for services
   storage keys (`tandem.*`; old `tnadem.*` keys are cleared once on load, so browsers start with fresh demo data),
   package names, e2e scripts, README. Reworded copy that explained the name.
 
+- **2026-11-07** — Added optional Supabase mode with Google OAuth, a shared event catalog, RSVP and attendance,
+  event chat, group creation, membership and private discussion. The Supabase migration and SQL regression tests
+  live under `supabase/`. The seeded browser demo is still available with the Supabase variables unset.
+
 ### Status vs spec (update as you go: ✅ done · 🟡 partial · ⬜ todo)
 
 | Spec § | Feature | Status |
@@ -176,7 +182,7 @@ test/       vitest specs for services
    For a deployed demo, add its URL to *Authorised JavaScript origins*.
 2. Rehearse the §10 demo script once end-to-end in a real browser; reset demo data right before judging.
 3. Optional upgrades if time remains (in value order):
-   - Real shared backend (Supabase: auth, Postgres, realtime chat) behind `services/storage.ts` → true multi-user demo.
+   - Configure the shared Supabase project and verify Google OAuth and Realtime with two browser profiles (README).
    - More seed events/groups (spec suggests 25–35 events; we have 35 incl. past) and a few photos.
    - French UI strings (Calgary/Canada bilingual audience), PWA install + offline shell.
    - Host-side tools: QR check-in, waitlist when an event is full, recurring-event creation.

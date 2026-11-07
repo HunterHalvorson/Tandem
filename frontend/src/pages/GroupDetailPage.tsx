@@ -1,6 +1,7 @@
 import { ArrowLeft, CalendarPlus, ListChecks, MapPin, UsersRound } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { RatingBadge, VerificationBadge } from '../components/events/EventBits'
+import { GroupDiscussion } from '../components/events/GroupDiscussion'
 import { EventCard } from '../components/events/EventCard'
 import { CategoryCover, CategoryIcon } from '../components/events/visuals'
 import { Avatar, Badge, ButtonLink, Card, Container, EmptyState, SectionHeading } from '../components/ui/primitives'
@@ -16,7 +17,7 @@ import { GroupJoinButton } from './GroupsPage'
 
 export default function GroupDetailPage() {
   const { id } = useParams()
-  const { db, user, now } = useApp()
+  const { db, user, now, shared } = useApp()
   const group = getGroup(db, id)
   usePageTitle(group?.name ?? 'Group not found')
   if (!group)
@@ -56,7 +57,7 @@ export default function GroupDetailPage() {
               title="Upcoming events"
               action={
                 user?.id === group.organizerId ? (
-                  <ButtonLink to="/events/new" size="sm">
+                  <ButtonLink to={`/events/new?group=${encodeURIComponent(group.id)}`} size="sm">
                     <CalendarPlus aria-hidden /> Schedule an event
                   </ButtonLink>
                 ) : undefined
@@ -74,6 +75,8 @@ export default function GroupDetailPage() {
               <EmptyState title="Nothing scheduled yet">Join the group to hear about the next one.</EmptyState>
             )}
           </section>
+
+          {shared && <GroupDiscussion key={group.id} groupId={group.id} />}
 
           {past.length > 0 && (
             <section className="mt-10" aria-labelledby="g-past">
@@ -95,12 +98,12 @@ export default function GroupDetailPage() {
         <aside className="space-y-4">
           <Card className="p-5">
             <p className="text-2xl font-extrabold text-ink">{groupMemberCount(db, group)}</p>
-            <p className="text-sm text-muted">members (includes seeded demo members)</p>
+            <p className="text-sm text-muted">members{!shared && " (includes seeded demo members)"}</p>
             <div className="mt-4">
               <GroupJoinButton group={group} />
             </div>
             {members.length > 0 && (
-              <div className="mt-4 flex -space-x-2" role="img" aria-label={`${members.length} members with accounts in this demo`}>
+              <div className="mt-4 flex -space-x-2" role="img" aria-label={`${members.length} members`}>
                 {members.slice(0, 8).map((m) => (
                   <Avatar key={m.id} user={m} size="sm" className="ring-2 ring-white" />
                 ))}

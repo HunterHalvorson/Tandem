@@ -96,12 +96,15 @@ export function AppShell() {
 /* ------------------------------------------------------------------ banners */
 
 function Banners() {
-  const { db, now, actions } = useApp()
+  const { db, now, actions, shared, sharedOffline } = useApp()
   const { toast } = useToast()
   const [dismissed, setDismissed] = useState(isBannerDismissed)
-  const stale = isSeedStale(db, now)
+  const stale = !shared && isSeedStale(db, now)
   return (
     <div id="site-banners">
+      {sharedOffline && <p role="status" className="bg-warning-tint px-4 py-2 text-center text-sm text-warning">
+        The shared workspace couldn’t refresh. Tandem will retry automatically.
+      </p>}
       {stale && (
         <div className="bg-warning-tint px-4 py-2 text-center text-sm text-warning">
           <RefreshCw aria-hidden className="mr-1.5 inline size-4 align-[-3px]" />
@@ -121,7 +124,9 @@ function Banners() {
       {!dismissed && (
         <div className="relative bg-ink px-10 py-2 text-center text-xs text-white/90 sm:text-sm">
           <Info aria-hidden className="mr-1.5 inline size-4 align-[-3px]" />
-          Hackathon prototype: demo accounts and ID verification are <strong className="text-white">simulated</strong>, data lives only in this browser, and seeded events are fictional.{' '}
+          {shared
+            ? 'Shared workspace: events, attendance and discussions sync through Supabase. ID verification is simulated.'
+            : <>Hackathon prototype: demo accounts and ID verification are <strong className="text-white">simulated</strong>, data lives only in this browser, and seeded events are fictional.</>}{' '}
           <Link to="/about" className="font-semibold text-white underline underline-offset-2">
             About this demo
           </Link>
@@ -264,7 +269,7 @@ function DisplayMenu() {
 }
 
 function AccountMenu() {
-  const { user, db, now, actions } = useApp()
+  const { user, db, now, actions, shared } = useApp()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
@@ -313,22 +318,17 @@ function AccountMenu() {
           <Link to="/settings" className={item} onClick={() => setOpen(false)}>
             <Settings aria-hidden /> Privacy & accessibility settings
           </Link>
-          <button
-            type="button"
-            className={item}
-            onClick={() => {
-              setOpen(false)
-              setSwitchOpen(true)
-            }}
-          >
-            <Users aria-hidden /> Switch demo account
-          </button>
+          {!shared && (
+            <button type="button" className={item} onClick={() => { setOpen(false); setSwitchOpen(true) }}>
+              <Users aria-hidden /> Switch demo account
+            </button>
+          )}
           <hr className="my-1 border-line" />
           <button
             type="button"
             className={item}
-            onClick={() => {
-              actions.signOut()
+            onClick={async () => {
+              if (!await actions.signOut()) return
               setOpen(false)
               toast('Signed out.', { tone: 'info' })
               navigate('/')
@@ -421,8 +421,8 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             <button
               type="button"
               className={link + ' w-full'}
-              onClick={() => {
-                actions.signOut()
+              onClick={async () => {
+                if (!await actions.signOut()) return
                 onClose()
                 navigate('/')
               }}

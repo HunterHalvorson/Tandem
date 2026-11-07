@@ -27,7 +27,33 @@ Other scripts (root or `frontend/`): `npm test` (Vitest), `npm run build` (type-
 
 No API keys, accounts or paid services are needed. Map tiles come from OpenStreetMap, so the map needs internet.
 
-### Sign in with Google (optional, ~5 minutes, free)
+### Shared workspace with Supabase
+
+1. Create a Supabase project and apply [the collaboration migration](supabase/migrations/20261107000000_collaboration.sql)
+   using its SQL Editor or your migration runner. It creates the private collaboration tables, Data API functions
+   and the Realtime publication entry.
+2. Enable the Google provider in Supabase Auth and configure the Google OAuth client with the callback URL shown
+   by Supabase. In Supabase Auth URL Configuration, set your app's Site URL and allow its `/login` callback
+   including the optional `next` query string. [Supabase Google setup](https://supabase.com/docs/guides/auth/social-login/auth-google)
+3. Set these values in `frontend/.env.local` and restart Vite. Use the project's publishable key.
+   ```dotenv
+   VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+   ```
+4. Sign in with Google, finish onboarding, then start a group or publish an event. Use a second Google account
+   in a separate browser profile to join and verify that RSVPs, event chat and group discussion update across clients.
+
+The shared catalog starts empty. With the Supabase variables unset, Tandem runs its seeded single-browser demo.
+In shared mode, Google sign-in, events, RSVPs, self-reported attendance, group membership and chat use Supabase.
+Each chat shows its latest 100 messages. Reviews, reports and most profile preferences stay in the browser.
+
+Run the database regression tests on a fresh test project after applying the migration:
+
+```bash
+psql "$TANDEM_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/collaboration.sql
+```
+
+### Google sign-in for the browser-only demo (optional)
 
 Real Google sign-in uses Google Identity Services — no backend and no passwords. New Google users get a Tandem
 profile created from their Google name, email and photo, then finish the usual profile setup; returning users go
@@ -110,11 +136,10 @@ frontend/src
 └── test/         Vitest specs for the services (spec §25 workflows)
 ```
 
-- **Data flow:** UI → `useApp().actions.x()` → pure service `(db, …) → newDb` → `storage.save()` → React state.
-  Components never touch `localStorage`; only `services/storage.ts` does, behind a `StorageAdapter` interface, so it can
-  be swapped for a backend (Supabase/Postgres) without touching the UI.
-- **Persistence:** one versioned JSON document (`tandem.db.v1`) in localStorage. The session is per tab
-  (sessionStorage) with a localStorage default, so two tabs can be two demo users; the `storage` event syncs tabs.
+- **Demo mode** uses pure services and a versioned localStorage document. The simulated session can differ by tab.
+- **Shared mode** uses Supabase Auth and Postgres RPCs for collaboration. Realtime sends a revision update with no
+  message contents. Each client refreshes a snapshot scoped to its identity, event access and group memberships.
+  Postgres locks the event row when processing RSVPs or capacity changes.
 - **Stack:** React 19, TypeScript, Vite 8, Tailwind CSS v4, React Router 7, Leaflet + React-Leaflet 5, lucide-react,
   Inter + Atkinson Hyperlegible (bundled), Vitest.
 
@@ -162,7 +187,7 @@ Set `CHROME_PATH` / `BASE_URL` to point the browser checks elsewhere.
 
 | Prototype | Production |
 |---|---|
-| localStorage: one browser profile; live chat only across tabs of the same browser | Backend (e.g. Supabase/Postgres + realtime) for shared events, registrations and chat |
+| Browser-only demo stores collaboration in one browser profile | Enable the Supabase shared workspace above |
 | Google sign-in checked in the browser; demo/email sign-in simulated (no passwords stored) | Server-side ID-token verification (or a managed auth provider) and MFA |
 | *Demo verified* badge, no documents collected | Certified third-party ID verification returning only pass/fail |
 | Self-reported attendance confirmation | Host-confirmed QR check-in |

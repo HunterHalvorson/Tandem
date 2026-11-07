@@ -289,6 +289,19 @@ export interface Report {
   createdAt: string
 }
 
+export interface EventCounts {
+  going: number
+  attended: number
+}
+
+export interface GroupMessage {
+  id: string
+  groupId: string
+  userId: string
+  body: string
+  createdAt: string
+}
+
 export interface Database {
   version: number
   /** ISO timestamp of when the demo world was generated (seed dates are relative to it). */
@@ -301,6 +314,7 @@ export interface Database {
   reviews: EventReview[]
   messages: ChatMessage[]
   reports: Report[]
+  eventCounts?: Record<string, EventCounts>
 }
 
 /* ------------------------------------------------------------------ derived */

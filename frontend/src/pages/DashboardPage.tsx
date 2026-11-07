@@ -115,8 +115,8 @@ export default function DashboardPage() {
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      if (actions.checkIn(e.id)) toast(`Attendance confirmed for ${e.title}. Thanks for showing up!`, { action: { label: 'Leave a review', to: `/events/${e.id}` } })
+                    onClick={async () => {
+                      if (await actions.checkIn(e.id)) toast(`Attendance confirmed for ${e.title}. Thanks for showing up!`, { action: { label: 'Leave a review', to: `/events/${e.id}` } })
                     }}
                   >
                     Confirm

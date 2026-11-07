@@ -32,6 +32,7 @@ function Onboarding({ user }: { user: User }) {
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))
   const [step, setStep] = useState(user.onboardingComplete ? 4 : 0)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   // Step 2 — location (+ 18+ confirmation for people who joined with Google)
@@ -58,7 +59,8 @@ function Onboarding({ user }: { user: User }) {
     window.scrollTo({ top: 0 })
   }
 
-  const saveStep = () => {
+  const saveStep = async () => {
+    if (saving) return
     if (step === 0) {
       if (!ageConfirmed) return setError('Please confirm you’re 18 or older — Tandem connects adults for in-person activities.')
       if (!travelling && !quadrant) return setError('Choose the quadrant you’ll mostly be exploring (you can change it later).')
@@ -77,7 +79,12 @@ function Onboarding({ user }: { user: User }) {
       actions.updateProfile({ interests })
     }
     if (step === 3) {
-      actions.updateProfile({ privacy, comfort: comfort.comfort, budget: comfort.budget, availability: comfort.availability, onboardingComplete: true })
+      setSaving(true)
+      try {
+        if (!await actions.updateProfile({ privacy, comfort: comfort.comfort, budget: comfort.budget, availability: comfort.availability, onboardingComplete: true })) return
+      } finally {
+        setSaving(false)
+      }
     }
     go(step + 1)
   }
@@ -305,7 +312,7 @@ function Onboarding({ user }: { user: User }) {
               Skip for now
             </Button>
           )}
-          <Button onClick={saveStep} size="lg">
+          <Button onClick={saveStep} disabled={saving} size="lg">
             {step === 3 ? 'Finish' : 'Continue'} <ArrowRight aria-hidden />
           </Button>
         </div>

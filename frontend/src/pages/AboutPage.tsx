@@ -4,9 +4,11 @@ import { LogoMark } from '../components/brand/Logo'
 import { ButtonLink, Card, Container } from '../components/ui/primitives'
 import { BRAND, MILES_NAME } from '../lib/brand'
 import { usePageTitle } from '../lib/hooks'
+import { useApp } from '../state/AppStore'
 
 export default function AboutPage() {
-  usePageTitle('About this demo')
+  usePageTitle('About Tandem')
+  const { shared } = useApp()
   return (
     <Container className="max-w-4xl py-10">
       <LogoMark className="h-12 w-auto" motion />
@@ -30,7 +32,7 @@ export default function AboutPage() {
                 'Discovery with combinable filters, sorting and plain-language/voice search',
                 'Interactive Calgary map (OpenStreetMap) sharing the exact same filters as the list',
                 'Creating, editing, cancelling and joining events with capacity rules',
-                'Per-event group chats, announcements and reporting',
+                shared ? 'Shared events, attendance, event chats and group discussions sync through Supabase' : 'Per-event group chats, announcements and reporting',
                 'Transparent recommendations, Ease Into It and the Weekend Planner',
                 `Event reviews, the fair leaderboard and ${MILES_NAME}`,
                 'Profiles with privacy controls, data download and deletion',
@@ -43,11 +45,12 @@ export default function AboutPage() {
             </h3>
             <List
               items={[
-                'Sign-in: demo accounts and email sign-in are simulated (no passwords stored). Sign in with Google is real when a client id is configured',
+                ...(shared ? ['Reviews, reports and most profile preferences stay in this browser'] : [
+                  'Demo accounts and email sign-in are simulated. Google sign-in is available when configured',
+                  'Demo data and live chat sync between tabs in this browser',
+                  'Seeded events, members, reviews and messages are fictional',
+                ]),
                 'ID verification: a clearly labelled “Demo verified” badge; no documents are collected',
-                'Storage: everything lives in this browser’s localStorage — not shared between people or devices',
-                'Live chat: syncs between tabs in the same browser only',
-                'Seeded events, members, reviews and messages are fictional (venues are real public places)',
                 'Attendance confirmation is self-reported (production: host-confirmed QR check-in)',
               ]}
             />
@@ -77,8 +80,7 @@ export default function AboutPage() {
       <Section title="What production would add" id="production">
         <List
           items={[
-            'A real backend (e.g. Postgres + realtime) for shared events, registrations and chat across devices',
-            'Server-side verification of Google ID tokens (or a managed auth provider), plus a certified third-party identity verification provider',
+            'Certified third-party identity verification',
             'Moderation tools, host-confirmed QR check-in and anti-abuse rate limits',
             'Partnerships with Calgary community associations, libraries and newcomer organisations',
             'Live event data imports and push/email reminders',
@@ -86,13 +88,13 @@ export default function AboutPage() {
         />
       </Section>
 
-      <Card className="mt-10 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center">
+      {!shared && <Card className="mt-10 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center">
         <Info aria-hidden className="size-6 shrink-0 text-info" />
         <p className="flex-1 text-sm text-ink-soft">Presenting a demo? Reset the demo data on the morning of the presentation so every seeded date lines up with today.</p>
         <ButtonLink to="/settings#data" variant="secondary">
           Reset demo data
         </ButtonLink>
-      </Card>
+      </Card>}
     </Container>
   )
 }

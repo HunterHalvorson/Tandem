@@ -1,6 +1,7 @@
 import { CalendarDays, Check, Search, UsersRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
+import { CreateGroup } from '../components/events/CreateGroup'
 import { CategoryCover, CategoryIcon } from '../components/events/visuals'
 import { Avatar, Badge, Button, Chip, Container, EmptyState, PageHeader } from '../components/ui/primitives'
 import { CATEGORIES } from '../data/categories'
@@ -30,8 +31,8 @@ export function GroupJoinButton({ group, size = 'md' }: { group: CommunityGroup;
     <Button
       variant="subtle"
       size={size === 'sm' ? 'sm' : 'md'}
-      onClick={() => {
-        if (actions.leaveGroup(group.id)) toast(`You left ${group.name}.`, { tone: 'info' })
+      onClick={async () => {
+        if (await actions.leaveGroup(group.id)) toast(`You left ${group.name}.`, { tone: 'info' })
       }}
     >
       <Check aria-hidden /> Member<span className="sr-only"> of {group.name} — select to leave</span>
@@ -39,12 +40,12 @@ export function GroupJoinButton({ group, size = 'md' }: { group: CommunityGroup;
   ) : (
     <Button
       size={size === 'sm' ? 'sm' : 'md'}
-      onClick={() => {
+      onClick={async () => {
         if (!user) {
           navigate(`/login?next=${encodeURIComponent(location.pathname)}`)
           return
         }
-        if (actions.joinGroup(group.id)) toast(`Welcome to ${group.name}! Their events now appear on your dashboard.`, { action: { label: 'View group', to: `/groups/${group.id}` } })
+        if (await actions.joinGroup(group.id)) toast(`Welcome to ${group.name}! Their events now appear on your dashboard.`, { action: { label: 'View group', to: `/groups/${group.id}` } })
       }}
     >
       Join group<span className="sr-only">: {group.name}</span>
@@ -54,7 +55,7 @@ export function GroupJoinButton({ group, size = 'md' }: { group: CommunityGroup;
 
 export default function GroupsPage() {
   usePageTitle('Community groups')
-  const { db, now } = useApp()
+  const { db, now, shared } = useApp()
   const [q, setQ] = useState('')
   const [quad, setQuad] = useState<Quadrant | null>(null)
   const groups = useMemo(
@@ -76,6 +77,7 @@ export default function GroupsPage() {
         description="Persistent interest groups that host activities again and again. Join a few — their events show up on your dashboard."
       />
       <div className="mb-6 flex flex-wrap items-center gap-3">
+        {shared && <CreateGroup />}
         <label className="relative w-full max-w-sm">
           <span className="sr-only">Search groups</span>
           <Search aria-hidden className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-muted" />
@@ -146,7 +148,7 @@ export default function GroupsPage() {
           })}
         </ul>
       )}
-      <p className="mt-8 text-center text-xs text-muted">Member counts include seeded demo members. Groups have no rankings, likes or follower lists.</p>
+      <p className="mt-8 text-center text-xs text-muted">{!shared && "Member counts include seeded demo members. "}Groups have no rankings, likes or follower lists.</p>
     </Container>
   )
 }

@@ -187,8 +187,8 @@ export function JoinButton({ event, size = 'md', className, fullWidth }: { event
         <Button
           size={size}
           className={cn(w, className)}
-          onClick={() => {
-            if (actions.joinEvent(event.id))
+          onClick={async () => {
+            if (await actions.joinEvent(event.id))
               toast(`You're going to ${event.title}! You'll earn +10 ${MILES_NAME} when you check in.`, {
                 action: { label: 'Open group chat', to: `/events/${event.id}/chat` },
               })

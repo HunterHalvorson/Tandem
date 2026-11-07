@@ -15,7 +15,7 @@ const compact = (n: number) => (n >= 10_000 ? `${(n / 1000).toFixed(1)}K` : n.to
 
 export default function ImpactPage() {
   usePageTitle('Community impact')
-  const { db, now } = useApp()
+  const { db, now, shared } = useApp()
   const m = impactMetrics(db, now)
   const byCategory = (Object.entries(m.byCategory) as Array<[CategoryId, number]>).sort((a, b) => b[1] - a[1])
 
@@ -24,12 +24,12 @@ export default function ImpactPage() {
       <PageHeader
         eyebrow="Measuring connection, not clicks"
         title="Community impact"
-        description={`How ${BRAND.name} moves Calgarians and visitors from scrolling to showing up — computed live from this browser’s dataset.`}
-        actions={
+        description={`How ${BRAND.name} moves Calgarians and visitors from scrolling to showing up — computed from ${shared ? 'the shared event catalog' : 'this browser’s dataset'}.`}
+        actions={!shared && (
           <Badge tone="warning" className="py-1.5 text-sm" title="Seeded numbers are demonstration data, not real Calgary outcomes.">
             <Info aria-hidden /> Demo data
           </Badge>
-        }
+        )}
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
@@ -37,7 +37,9 @@ export default function ImpactPage() {
           <p className="text-sm font-semibold text-muted">People signed up for upcoming activities</p>
           <p className="mt-2 text-6xl font-extrabold tracking-tight text-ink">{compact(m.upcomingParticipants)}</p>
           <p className="mt-3 text-sm text-muted">
-            Includes seeded demo participants. Events joined in this browser: <strong className="text-ink">{m.live.registrations}</strong>.
+            {shared ? 'Includes confirmed RSVPs for upcoming public events.' : <>
+              Includes seeded demo participants. Events joined in this browser: <strong className="text-ink">{m.live.registrations}</strong>.
+            </>}
           </p>
         </Card>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -66,7 +68,7 @@ export default function ImpactPage() {
         />
       </div>
 
-      <section className="mt-10" aria-labelledby="live">
+      {!shared && <section className="mt-10" aria-labelledby="live">
         <SectionHeading
           id="live"
           eyebrow={
@@ -84,7 +86,7 @@ export default function ImpactPage() {
           <Stat icon={<Star aria-hidden />} label="Reviews written" value={m.live.reviews} />
           <Stat icon={<UsersRound aria-hidden />} label="Groups joined" value={m.live.groupJoins} />
         </ul>
-      </section>
+      </section>}
 
       <section className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2" aria-label="Impact approach">
         <Card className="p-6">
@@ -109,7 +111,7 @@ export default function ImpactPage() {
           <p className="mt-4 text-xs text-muted">All measures are aggregated. {BRAND.name} never publishes individual scores or ranks people.</p>
         </Card>
       </section>
-      <p className="mt-8 text-xs text-muted">The numbers on this page come from seeded demonstration data plus actions taken in this browser. They are not real Calgary statistics.</p>
+      {!shared && <p className="mt-8 text-xs text-muted">Figures reflect seeded demo data and actions taken in this browser.</p>}
     </Container>
   )
 }

@@ -61,41 +61,46 @@ function safeParse(raw: string | null): unknown {
   }
 }
 
-export const localStorageAdapter: StorageAdapter = {
-  load() {
-    try {
-      const parsed = safeParse(localStorage.getItem(DB_KEY))
-      return isDatabase(parsed) ? parsed : null
-    } catch {
-      return null
-    }
-  },
-  save(db) {
-    try {
-      localStorage.setItem(DB_KEY, JSON.stringify(db))
-      return { ok: true }
-    } catch (e) {
-      const quota = e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
-      return { ok: false, error: quota ? 'Browser storage is full. Try removing your profile photo or resetting demo data.' : 'Could not save to browser storage.' }
-    }
-  },
-  clear() {
-    try {
-      localStorage.removeItem(DB_KEY)
-    } catch {
-      /* ignore */
-    }
-  },
-  subscribe(onChange) {
-    const handler = (e: StorageEvent) => {
-      if (e.key !== DB_KEY) return
-      const parsed = safeParse(e.newValue)
-      onChange(isDatabase(parsed) ? parsed : null)
-    }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
-  },
+function browserAdapter(key: string): StorageAdapter {
+  return {
+    load() {
+      try {
+        const parsed = safeParse(localStorage.getItem(key))
+        return isDatabase(parsed) ? parsed : null
+      } catch {
+        return null
+      }
+    },
+    save(db) {
+      try {
+        localStorage.setItem(key, JSON.stringify(db))
+        return { ok: true }
+      } catch (e) {
+        const quota = e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
+        return { ok: false, error: quota ? 'Browser storage is full. Try removing your profile photo or resetting demo data.' : 'Could not save to browser storage.' }
+      }
+    },
+    clear() {
+      try {
+        localStorage.removeItem(key)
+      } catch {
+        /* ignore */
+      }
+    },
+    subscribe(onChange) {
+      const handler = (e: StorageEvent) => {
+        if (e.key !== key) return
+        const parsed = safeParse(e.newValue)
+        onChange(isDatabase(parsed) ? parsed : null)
+      }
+      window.addEventListener('storage', handler)
+      return () => window.removeEventListener('storage', handler)
+    },
+  }
 }
+
+export const localStorageAdapter = browserAdapter(DB_KEY)
+export const sharedPreferencesAdapter = browserAdapter('tandem.shared.preferences.v1')
 
 /** In-memory adapter (tests, or environments where storage is blocked). */
 export function createMemoryAdapter(initial: Database | null = null): StorageAdapter {

@@ -1,6 +1,7 @@
 import { ArrowRight, KeyRound } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { SharedSignIn } from '../components/auth/SharedSignIn'
 import { GoogleSignInButton } from '../components/auth/GoogleSignInButton'
 import { LogoMark } from '../components/brand/Logo'
 import { Avatar, Button, Card, Container, Field, Input } from '../components/ui/primitives'
@@ -13,12 +14,19 @@ import { useApp } from '../state/AppStore'
 import { useToast } from '../state/toast'
 
 export function safeNext(next: string | null): string | null {
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : null
+  if (!next?.startsWith('/') || next.startsWith('//') || next.includes('\\')) return null
+  try {
+    const base = 'https://tandem.invalid'
+    const url = new URL(next, base)
+    return url.origin === base && !url.pathname.startsWith('//') ? url.pathname + url.search + url.hash : null
+  } catch {
+    return null
+  }
 }
 
 export default function LoginPage() {
   usePageTitle('Sign in')
-  const { db, actions } = useApp()
+  const { db, actions, shared } = useApp()
   const { toast } = useToast()
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -26,6 +34,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+
+  if (shared) return <SharedSignIn next={next} />
 
   const go = (userId: string) => {
     if (!actions.signIn(userId)) return

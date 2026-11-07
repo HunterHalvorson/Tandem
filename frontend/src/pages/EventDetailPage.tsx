@@ -128,11 +128,11 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
     }
   }
 
-  const doCheckIn = () => {
+  const doCheckIn = async () => {
     if (!user) return
     const before = computeMiles(db, user.id, now)
     const after = computeMiles(checkIn(db, event.id, user.id, new Date()), user.id, now)
-    if (actions.checkIn(event.id)) {
+    if (await actions.checkIn(event.id)) {
       const unlocked = after.milestones.filter((m) => m.achieved && !before.milestones.find((b) => b.id === m.id)?.achieved)
       toast(
         `Attendance confirmed: +${after.total - before.total} ${MILES_NAME}.${unlocked.length ? ` Milestone unlocked: ${unlocked.map((m) => m.title).join(', ')} 🎉` : ''}`,
@@ -435,8 +435,8 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
               Keep event
             </Button>
             <Button
-              onClick={() => {
-                if (actions.cancelEvent(event.id, cancelReason)) {
+              onClick={async () => {
+                if (await actions.cancelEvent(event.id, cancelReason)) {
                   toast('Event cancelled. Attendees have been notified in the group chat.', { tone: 'info' })
                   setCancelOpen(false)
                 }
@@ -464,8 +464,8 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (actions.leaveEvent(event.id)) {
+              onClick={async () => {
+                if (await actions.leaveEvent(event.id)) {
                   toast(`You left ${event.title}.`, { tone: 'info' })
                   setLeaveOpen(false)
                 }

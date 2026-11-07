@@ -51,7 +51,7 @@ export function isGoing(db: Database, eventId: string, userId: string | null | u
 
 /** Registered participants (seeded anonymous demo participants + real registrations). Host not included. */
 export function registeredCount(db: Database, event: CalgaryEvent): number {
-  return event.baseAttendeeCount + goingRegistrations(db, event.id).length
+  return db.eventCounts?.[event.id]?.going ?? event.baseAttendeeCount + goingRegistrations(db, event.id).length
 }
 
 export function spotsLeft(db: Database, event: CalgaryEvent): number {
@@ -60,7 +60,7 @@ export function spotsLeft(db: Database, event: CalgaryEvent): number {
 
 /** Attendance for completed events: seeded anonymous attendees + checked-in registrations. */
 export function attendedCount(db: Database, event: CalgaryEvent): number {
-  return event.baseAttendeeCount + db.registrations.filter((r) => r.eventId === event.id && r.status === 'going' && r.checkedInAt).length
+  return db.eventCounts?.[event.id]?.attended ?? event.baseAttendeeCount + db.registrations.filter((r) => r.eventId === event.id && r.status === 'going' && r.checkedInAt).length
 }
 
 /* ------------------------------------------------------------------ event lifecycle */

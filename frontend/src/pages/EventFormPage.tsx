@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Check, CircleHelp, MapPin, Rocket, Wand2, X } from 'lucide-react'
 import { useMemo, useRef, useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { CategoryCover, CategoryIcon, ACCESS_ICON } from '../components/events/visuals'
 import { LazyLocationPicker } from '../components/map/lazy'
 import { Badge, Button, ButtonLink, Card, Checkbox, Container, EmptyState, Field, Input, Segmented, Select, Switch, Textarea } from '../components/ui/primitives'
@@ -96,6 +96,8 @@ const TEMPLATES: Array<{ label: string; patch: Partial<EventDraft> }> = [
 ]
 
 export default function EventFormPage() {
+  const [params] = useSearchParams()
+  const groupParam = params.get('group')
   const { id } = useParams()
   const { db, user, now } = useApp()
   const editing = id ? getEvent(db, id) : undefined
@@ -121,7 +123,7 @@ export default function EventFormPage() {
         </EmptyState>
       </Container>
     )
-  return <EventForm key={editing?.id ?? 'new'} initial={editing ? draftFromEvent(editing) : emptyDraft(now)} eventId={editing?.id} registered={editing ? registeredCount(db, editing) : undefined} />
+  return <EventForm key={editing?.id ?? 'new'} initial={editing ? draftFromEvent(editing) : emptyDraft(now, { groupId: db.groups.find((group) => group.id === groupParam && group.organizerId === user?.id)?.id ?? '' })} eventId={editing?.id} registered={editing ? registeredCount(db, editing) : undefined} />
 }
 
 function EventForm({ initial, eventId, registered }: { initial: EventDraft; eventId?: string; registered?: number }) {
@@ -130,6 +132,7 @@ function EventForm({ initial, eventId, registered }: { initial: EventDraft; even
   const navigate = useNavigate()
   const [draft, setDraft] = useState<EventDraft>(initial)
   const [step, setStep] = useState(0)
+  const [publishing, setPublishing] = useState(false)
   const [shownErrors, setShownErrors] = useState<DraftErrors>({})
   const summaryRef = useRef<HTMLDivElement>(null)
   const myGroups = groupsOrganizedBy(db, user?.id)
@@ -159,7 +162,8 @@ function EventForm({ initial, eventId, registered }: { initial: EventDraft; even
     window.scrollTo({ top: 0 })
   }
 
-  const publish = () => {
+  const publish = async () => {
+    if (publishing) return
     if (Object.keys(allErrors).length) {
       const firstBad = [0, 1, 2].find((s) => Object.keys(stepErrors(allErrors, s)).length) ?? 0
       setStep(firstBad)
@@ -167,17 +171,22 @@ function EventForm({ initial, eventId, registered }: { initial: EventDraft; even
       requestAnimationFrame(() => summaryRef.current?.focus())
       return
     }
-    if (eventId) {
-      if (actions.updateEvent(eventId, draft)) {
-        toast('Changes saved. Attendees can see the update in the group chat.')
-        navigate(`/events/${eventId}`)
+    setPublishing(true)
+    try {
+      if (eventId) {
+        if (await actions.updateEvent(eventId, draft)) {
+          toast('Changes saved. Attendees can see the update in the group chat.')
+          navigate(`/events/${eventId}`)
+        }
+      } else {
+        const created = await actions.createEvent(draft)
+        if (created) {
+          toast('Your event is live! It’s in Discover, on the Calgary map, and its group chat is ready.', { action: { label: 'See it on the map', to: `/map?cat=${created.categoryId}` } })
+          navigate(`/events/${created.id}`)
+        }
       }
-    } else {
-      const created = actions.createEvent(draft)
-      if (created) {
-        toast('Your event is live! It’s in Discover, on the Calgary map, and its group chat is ready.', { action: { label: 'See it on the map', to: `/map?cat=${created.categoryId}` } })
-        navigate(`/events/${created.id}`)
-      }
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -567,7 +576,7 @@ function EventForm({ initial, eventId, registered }: { initial: EventDraft; even
             Next: {STEPS[step + 1]} <ArrowRight aria-hidden />
           </Button>
         ) : (
-          <Button size="lg" onClick={publish}>
+          <Button size="lg" onClick={publish} disabled={publishing}>
             <Rocket aria-hidden /> {eventId ? 'Save changes' : 'Publish event'}
           </Button>
         )}
