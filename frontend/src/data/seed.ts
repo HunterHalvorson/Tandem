@@ -603,6 +603,33 @@ const KITCHEN_ACCESS: Partial<AccessibilityInfo> = {
 }
 
 const EVENT_SEEDS: EventSeed[] = [
+  {
+    key: 'cranston-run-club',
+    host: 'priya',
+    title: 'Cranston Run Club',
+    cat: 'running',
+    venue: 'fish-creek',
+    day: 'nextSat',
+    time: '09:00',
+    minutes: 60,
+    price: 0,
+    capacity: 25,
+    base: 0,
+    beginner: true,
+    traveller: true,
+    setting: 'outdoor',
+    access: { quiet: 'confirmed', virtual: 'unavailable' },
+    firstTime: {
+      whatToExpect: 'A relaxed, social run with options to run or walk-run. We regroup along the way.',
+      whatToBring: 'Running shoes, water and weather-appropriate layers.',
+      experienceNeeded: 'None. All paces are welcome.',
+      howToFindUs: 'The exact Cranston meeting point will be confirmed by the organizer before the event.',
+      bringAFriend: true,
+    },
+    guidelines: 'Respect other pathway users and stay with the group.',
+    description:
+      'Meet fellow runners in Cranston, southeast Calgary, for a friendly community run. All paces are welcome, including beginners and walk-runners. Meeting point to be confirmed.',
+  },
   /* ---------------- Bow River Sunrise Run (series) ---------------- */
   {
     key: 'sunrise-run-past-2',
@@ -1694,7 +1721,17 @@ export function createSeedDatabase(now: Date = new Date()): Database {
       coverVariant: index % 3,
       startsAt: start.toISOString(),
       endsAt: end.toISOString(),
-      venue: s.approx
+      venue: s.key === 'cranston-run-club'
+        ? {
+            name: 'Cranston, Calgary (meeting point TBC)',
+            area: 'Cranston',
+            quadrant: 'SE',
+            lat: 50.879,
+            lng: -113.974,
+            approximate: true,
+            privateDetails: 'Organizer will confirm the meeting point before the run.',
+          }
+        : s.approx
         ? {
             name: s.approx.label,
             area: s.approx.hood,
