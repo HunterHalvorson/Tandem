@@ -54,24 +54,24 @@ export default function TravellerPage() {
   const more = plan.matches.filter((r) => !plannedIds.has(r.event.id)).slice(0, 6)
   const mapLink = `/map?travel=${prefs.travellerOnly ? 1 : 0}&date=custom&from=${prefs.arrival}&to=${prefs.departure}${prefs.budgetPerEvent !== null ? `&max=${prefs.budgetPerEvent}` : ''}${prefs.quadrants.length ? `&quad=${prefs.quadrants.join(',')}` : ''}`
 
-  const joinAll = () => {
+  const joinAll = async () => {
     if (!user) {
       navigate('/login?next=/explore-like-a-local')
       return
     }
     let joined = 0
-    for (const it of planned) if (!it.alreadyGoing && actions.joinEvent(it.rec.event.id)) joined++
+    for (const it of planned) if (!it.alreadyGoing && await actions.joinEvent(it.rec.event.id)) joined++
     toast(joined ? `You joined ${pluralize(joined, 'activity', 'activities')}. Their group chats are on your dashboard.` : 'You’re already going to everything in this plan.', {
       action: { label: 'Open dashboard', to: '/dashboard' },
     })
   }
-  const save = () => {
+  const save = async () => {
     if (!user) {
       navigate('/login?next=/explore-like-a-local')
       return
     }
     if (
-      actions.updateProfile({
+      await actions.updateProfile({
         travelMode: true,
         traveller: { ...user.traveller, arrival: prefs.arrival, departure: prefs.departure, budgetPerEvent: prefs.budgetPerEvent, preferredQuadrants: prefs.quadrants, itinerary: planned.map((i) => i.rec.event.id) },
       })

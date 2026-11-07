@@ -79,6 +79,13 @@ function newUserRecord(db: Database, now: Date, fields: Pick<User, 'firstName' |
   }
 }
 
+export function sharedUser(db: Database, fields: Pick<User, 'id' | 'firstName' | 'email'> & Partial<User>): User {
+  return newUserRecord(db, new Date(), {
+    lastName: '', ageConfirmed: false, residency: 'resident', travelMode: false,
+    ...fields,
+  })
+}
+
 /** The identity claims we use from a Google ID token (see services/googleAuth.ts). */
 export interface GoogleProfile {
   sub: string

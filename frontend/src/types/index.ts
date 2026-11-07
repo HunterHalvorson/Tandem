@@ -253,8 +253,8 @@ export interface EventReview {
   eventId: string
   userId: string
   overall: number
-  organization: number
-  accuracy: number
+  organization: number | null
+  accuracy: number | null
   /** null = "not applicable / didn't need it". */
   accessibilityAccuracy: number | null
   /** "Would you attend another activity with this group?" — aggregated, never shown per person. */
@@ -289,6 +289,19 @@ export interface Report {
   createdAt: string
 }
 
+export interface EventCounts {
+  going: number
+  attended: number
+}
+
+export interface GroupMessage {
+  id: string
+  groupId: string
+  userId: string
+  body: string
+  createdAt: string
+}
+
 export interface Database {
   version: number
   /** ISO timestamp of when the demo world was generated (seed dates are relative to it). */
@@ -301,6 +314,7 @@ export interface Database {
   reviews: EventReview[]
   messages: ChatMessage[]
   reports: Report[]
+  eventCounts?: Record<string, EventCounts>
 }
 
 /* ------------------------------------------------------------------ derived */

@@ -19,17 +19,19 @@ import {
   Trees,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { AccessibilityList, CapacityMeter, DemoLabel, JoinButton, VerificationBadge } from '../components/events/EventBits'
 import { SaveButton } from '../components/events/EventCard'
 import { RecommendationWhy } from '../components/events/RecommendationWhy'
 import { ReportDialog } from '../components/events/ReportDialog'
-import { CategoryCover, CategoryIcon } from '../components/events/visuals'
+import { CategoryIcon } from '../components/events/visuals'
 import { LazyMiniMap } from '../components/map/lazy'
 import { ReviewForm } from '../components/reviews/ReviewForm'
 import { Dialog } from '../components/ui/Dialog'
 import { Avatar, Badge, Button, ButtonLink, Card, Container, EmptyState, StarRating, Textarea } from '../components/ui/primitives'
 import { confirmedFeatures, accessFeature } from '../data/accessibility'
+import { PhotoFigure } from '../components/events/PhotoFigure'
+import { eventPhoto } from '../data/calgaryPhotos'
 import { CATEGORIES } from '../data/categories'
 import { QUADRANT_INFO } from '../data/calgary'
 import { BRAND, MILES_NAME } from '../lib/brand'
@@ -69,6 +71,7 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
   const { db, user, now, actions } = useApp()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { hash } = useLocation()
   const [speaking, setSpeaking] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
@@ -76,6 +79,13 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
   const [cancelReason, setCancelReason] = useState('')
 
   useEffect(() => () => stopSpeaking(), [])
+
+  useEffect(() => {
+    if (hash === '#rate-activity') {
+      const frame = requestAnimationFrame(() => document.getElementById('rate-activity')?.focus())
+      return () => cancelAnimationFrame(frame)
+    }
+  }, [event.id, hash])
 
   const host = getUser(db, event.hostId)
   const group = getGroup(db, event.groupId)
@@ -128,11 +138,11 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
     }
   }
 
-  const doCheckIn = () => {
+  const doCheckIn = async () => {
     if (!user) return
     const before = computeMiles(db, user.id, now)
     const after = computeMiles(checkIn(db, event.id, user.id, new Date()), user.id, now)
-    if (actions.checkIn(event.id)) {
+    if (await actions.checkIn(event.id)) {
       const unlocked = after.milestones.filter((m) => m.achieved && !before.milestones.find((b) => b.id === m.id)?.achieved)
       toast(
         `Attendance confirmed: +${after.total - before.total} ${MILES_NAME}.${unlocked.length ? ` Milestone unlocked: ${unlocked.map((m) => m.title).join(', ')} 🎉` : ''}`,
@@ -142,6 +152,7 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
   }
 
   const cat = CATEGORIES[event.categoryId]
+  const photo = eventPhoto(event.venue)
   const seeExact = going || isHost
 
   return (
@@ -161,20 +172,7 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <article className="min-w-0">
-          {event.id === 'evt-cranston-run-club' ? (
-            <img
-              src="/images/events/cranston-run-club.jpg"
-              alt="Cranston Run Club"
-              className="aspect-[21/8] w-full rounded-card border border-line object-cover"
-            />
-          ) : (
-            <CategoryCover
-              categoryId={event.categoryId}
-              variant={event.coverVariant}
-              iconSize="lg"
-              className="aspect-[21/8] rounded-card border border-line"
-            />
-          )}
+          <PhotoFigure photo={photo} className="aspect-[2/1]" />
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Badge tone="outline">
               <CategoryIcon id={event.categoryId} /> {cat.label}
@@ -287,6 +285,18 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
           </Section>
 
           <Section title="Reviews" eyebrow={event.seriesId ? 'Feedback from past sessions of this activity' : undefined}>
+            {user && reg?.status === 'going' && phase === 'ended' && (
+              <div id="rate-activity" tabIndex={-1} className="mb-5 rounded-card border border-line bg-white p-5">
+                {reviewEligibility.ok ? (
+                  <>
+                    <h3 className="mb-4 text-lg font-bold">Rate this activity</h3>
+                    <ReviewForm key={event.id} event={event} />
+                  </>
+                ) : (
+                  <p className="text-sm text-ink-soft">{reviewEligibility.reason}</p>
+                )}
+              </div>
+            )}
             {summary.count === 0 ? (
               <p className="text-sm text-muted">No reviews yet. Attendees can review once the event is over.</p>
             ) : (
@@ -312,7 +322,7 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
                         <div className="flex flex-wrap items-center gap-2 text-sm">
                           <StarRating value={r.overall} />
                           <span className="text-muted">·</span>
-                          <span className="font-semibold text-ink">{author ? author.firstName : 'Former member'}</span>
+                          <span className="font-semibold text-ink">{r.userId === user?.id ? 'You' : author?.firstName ?? 'Attendee'}</span>
                           <Badge tone="success">
                             <CheckCircle2 aria-hidden /> Attended
                           </Badge>
@@ -325,18 +335,6 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
                   })}
                 </ul>
               </>
-            )}
-            {user && reg?.status === 'going' && phase === 'ended' && (
-              <div className="mt-5 rounded-card border border-line bg-white p-5">
-                {reviewEligibility.ok ? (
-                  <>
-                    <h3 className="mb-4 text-lg font-bold">Review this event</h3>
-                    <ReviewForm event={event} />
-                  </>
-                ) : (
-                  <p className="text-sm text-ink-soft">{reviewEligibility.reason}</p>
-                )}
-              </div>
             )}
           </Section>
 
@@ -376,6 +374,9 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
               <p className="flex items-center gap-1.5 text-sm font-semibold text-success">
                 <CheckCircle2 aria-hidden className="size-4" /> Attendance confirmed
               </p>
+            )}
+            {reviewEligibility.ok && (
+              <ButtonLink to="#rate-activity" variant="secondary" className="w-full">Rate this activity</ButtonLink>
             )}
             {(going || isHost) && (
               <ButtonLink to={`/events/${event.id}/chat`} variant="secondary" className="w-full">
@@ -435,8 +436,8 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
               Keep event
             </Button>
             <Button
-              onClick={() => {
-                if (actions.cancelEvent(event.id, cancelReason)) {
+              onClick={async () => {
+                if (await actions.cancelEvent(event.id, cancelReason)) {
                   toast('Event cancelled. Attendees have been notified in the group chat.', { tone: 'info' })
                   setCancelOpen(false)
                 }
@@ -464,8 +465,8 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (actions.leaveEvent(event.id)) {
+              onClick={async () => {
+                if (await actions.leaveEvent(event.id)) {
                   toast(`You left ${event.title}.`, { tone: 'info' })
                   setLeaveOpen(false)
                 }

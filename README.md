@@ -27,7 +27,33 @@ Other scripts (root or `frontend/`): `npm test` (Vitest), `npm run build` (type-
 
 No API keys, accounts or paid services are needed. Map tiles come from OpenStreetMap, so the map needs internet.
 
-### Sign in with Google (optional, ~5 minutes, free)
+### Shared workspace with Supabase
+
+1. Create a Supabase project and apply the [collaboration](supabase/migrations/20261107000000_collaboration.sql) and [activity ratings](supabase/migrations/20261107000100_activity_ratings.sql) migrations in order
+   using its SQL Editor or your migration runner. It creates the private collaboration tables, Data API functions
+   and the Realtime publication entry.
+2. Enable the Google provider in Supabase Auth and configure the Google OAuth client with the callback URL shown
+   by Supabase. In Supabase Auth URL Configuration, set your app's Site URL and allow its `/login` callback
+   including the optional `next` query string. [Supabase Google setup](https://supabase.com/docs/guides/auth/social-login/auth-google)
+3. Set these values in `frontend/.env.local` and restart Vite. Use the project's publishable key.
+   ```dotenv
+   VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+   ```
+4. Sign in with Google, finish onboarding, then start a group or publish an event. Use a second Google account
+   in a separate browser profile to join and verify that RSVPs, event chat and group discussion update across clients.
+
+The shared catalog starts empty. With the Supabase variables unset, Tandem runs its seeded single-browser demo.
+In shared mode, Google sign-in, events, RSVPs, self-reported attendance, group membership and chat use Supabase.
+Each chat shows its latest 100 messages. New activity ratings sync across the shared workspace. Reports, earlier browser-only reviews and most profile preferences stay in the browser.
+
+Run the database regression tests on a fresh test project after applying the migration:
+
+```bash
+psql "$TANDEM_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/collaboration.sql
+```
+
+### Google sign-in for the browser-only demo (optional)
 
 Real Google sign-in uses Google Identity Services — no backend and no passwords. New Google users get a Tandem
 profile created from their Google name, email and photo, then finish the usual profile setup; returning users go
@@ -60,16 +86,18 @@ expiry in the browser and never stores the token; a production deployment must v
 Use **Settings → Your data → Reset demo data** on the morning of a demo: seeded event dates are generated relative to
 the day you reset. Open a second tab signed in as another demo account to see the group chat update live.
 
+To try ratings immediately, continue as **Alex Rivera** and open **My events → Calgary Tech Coffee Meetup → Rate activity**.
+The meetup is already complete and Alex's attendance is confirmed.
+
 ### 3–5 minute demo script (spec §27)
 
 1. **Problem** — a student just moved to Calgary and doesn't know where to start.
-2. **Onboarding** — *Create account* → New to Calgary → NW → Running, Reading, Hiking → Small groups, Beginner-friendly,
-   Free → finish: three explained recommendations appear immediately.
+2. **Profile setup** — create an account, select NW and a few interests, then choose *Find events* to see personalized suggestions.
 3. **Smart discovery** — *Discover*: drag the price slider, tick *Wheelchair accessible*; try the search box
    “free hiking this weekend in NW” (or the mic).
 4. **Calgary map** — *Explore Calgary Map* → quadrant chip **NW** → click a marker → preview → Join.
 5. **Participation** — join *Bow River Sunrise Run* (count goes 12 → 13), open the group chat, see it on the dashboard.
-6. **Community creation** — *Create Event* → *Book club* template → Next ×4 → Publish → it's in Discover and on the map.
+6. **Community creation** — *Create event* → *Use a template* → *Book club* → Publish → it's in Discover and on the map.
 7. **Accessibility** — toggle **Ease Into It** on Discover and watch smaller, beginner-friendly events rise; open the
    ♿ menu (text size, contrast, readable font); press *Read aloud* on an event.
 8. **Traveller** — switch to **Sam** → *Explore Like a Local* → dates are prefilled → Weekend Planner → *Join all*.
@@ -84,7 +112,7 @@ the day you reset. Open a second tab signed in as another demo account to see th
 |---|---|
 | **Discovery** | Event cards with date, quadrant, price, capacity, host demo-verification, ratings and confirmed accessibility. Filters for price slider (0–$150+), free only, multi-category, quadrant, date presets + custom range, group size, 7 accessibility features, spaces available, verified host, traveller-friendly, indoor/outdoor. Seven sort orders. Plain-language + **voice** search ("quiet book club this weekend"). |
 | **Calgary map** | Leaflet + OpenStreetMap, quadrant overlay (NW/NE/SW/SE), category-icon markers (never colour-only), zoom-aware clustering, popups with Join, fit-to-events, list/map toggle. **Same filter state and logic as the list** (filters live in the URL). Private locations show an area circle, never a pin. |
-| **Events** | 5-step create/edit form with templates, per-step validation and an accessible error summary; public place picker or drop-a-pin; private/residential mode; First-Time Friendly details; tri-state accessibility (confirmed / not yet confirmed / not available); cancel with reason; .ics calendar export; share; read aloud. |
+| **Events** | Single-page create/edit form with templates, optional details and an accessible error summary; public place picker or drop-a-pin; private/residential mode; First-Time Friendly details; tri-state accessibility (confirmed / not yet confirmed / not available); cancel with reason; .ics calendar export; share; read aloud. |
 | **Group chat** | Per-event, attendees + host only; host announcements; participants; leave event; report message; persisted; live across tabs in the same browser. Seeded messages are labelled *Demo message*. |
 | **Explore Like a Local** | Travel mode, travel dates, budget, quadrants → rule-based **Weekend Planner** (real events only, capacity/date/budget-aware, no overlaps), *Join all*, save to dashboard. |
 | **Groups** | 12 persistent community groups with organizers, guidelines, upcoming/past events, join/leave. |
@@ -93,6 +121,10 @@ the day you reset. Open a second tab signed in as another demo account to see th
 | **Accessibility** | Comfort & Access preferences with must-haves, **Ease Into It**, text size, high contrast, reduced motion, Atkinson Hyperlegible font, underline links, read aloud, voice search, skip link, focus management, keyboard-operable map. |
 | **Privacy & trust** | No addresses, passwords, IDs or medical data stored; private-by-default preferences; live “as others see it” profile preview; simulated ID verification badge reads *Demo verified*; export / delete my data; confidential reporting. |
 | **Impact** | Community impact dashboard computed live (demo-labelled), with counters that move as you use the app. |
+
+Event and group cards and detail pages use Calgary photography from Wikimedia Commons. Detail pages show the location
+pictured, photographer, source and license. A labelled Calgary skyline photo appears where there is no matching
+venue or neighbourhood photo. WebP copies are bundled with the app.
 
 ---
 
@@ -110,11 +142,10 @@ frontend/src
 └── test/         Vitest specs for the services (spec §25 workflows)
 ```
 
-- **Data flow:** UI → `useApp().actions.x()` → pure service `(db, …) → newDb` → `storage.save()` → React state.
-  Components never touch `localStorage`; only `services/storage.ts` does, behind a `StorageAdapter` interface, so it can
-  be swapped for a backend (Supabase/Postgres) without touching the UI.
-- **Persistence:** one versioned JSON document (`tandem.db.v1`) in localStorage. The session is per tab
-  (sessionStorage) with a localStorage default, so two tabs can be two demo users; the `storage` event syncs tabs.
+- **Demo mode** uses pure services and a versioned localStorage document. The simulated session can differ by tab.
+- **Shared mode** uses Supabase Auth and Postgres RPCs for collaboration. Realtime sends a revision update with no
+  message contents. Each client refreshes a snapshot scoped to its identity, event access and group memberships.
+  Postgres locks the event row when processing RSVPs or capacity changes.
 - **Stack:** React 19, TypeScript, Vite 8, Tailwind CSS v4, React Router 7, Leaflet + React-Leaflet 5, lucide-react,
   Inter + Atkinson Hyperlegible (bundled), Vitest.
 
@@ -162,7 +193,7 @@ Set `CHROME_PATH` / `BASE_URL` to point the browser checks elsewhere.
 
 | Prototype | Production |
 |---|---|
-| localStorage: one browser profile; live chat only across tabs of the same browser | Backend (e.g. Supabase/Postgres + realtime) for shared events, registrations and chat |
+| Browser-only demo stores collaboration in one browser profile | Enable the Supabase shared workspace above |
 | Google sign-in checked in the browser; demo/email sign-in simulated (no passwords stored) | Server-side ID-token verification (or a managed auth provider) and MFA |
 | *Demo verified* badge, no documents collected | Certified third-party ID verification returning only pass/fail |
 | Self-reported attendance confirmation | Host-confirmed QR check-in |

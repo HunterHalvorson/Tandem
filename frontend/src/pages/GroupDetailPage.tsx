@@ -1,9 +1,12 @@
 import { ArrowLeft, CalendarPlus, ListChecks, MapPin, UsersRound } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { RatingBadge, VerificationBadge } from '../components/events/EventBits'
+import { PhotoFigure } from '../components/events/PhotoFigure'
+import { GroupDiscussion } from '../components/events/GroupDiscussion'
 import { EventCard } from '../components/events/EventCard'
-import { CategoryCover, CategoryIcon } from '../components/events/visuals'
+import { CategoryIcon } from '../components/events/visuals'
 import { Avatar, Badge, ButtonLink, Card, Container, EmptyState, SectionHeading } from '../components/ui/primitives'
+import { groupPhoto } from '../data/calgaryPhotos'
 import { CATEGORIES } from '../data/categories'
 import { formatMonthDay } from '../lib/dates'
 import { displayName } from '../lib/format'
@@ -16,7 +19,7 @@ import { GroupJoinButton } from './GroupsPage'
 
 export default function GroupDetailPage() {
   const { id } = useParams()
-  const { db, user, now } = useApp()
+  const { db, user, now, shared } = useApp()
   const group = getGroup(db, id)
   usePageTitle(group?.name ?? 'Group not found')
   if (!group)
@@ -25,6 +28,7 @@ export default function GroupDetailPage() {
         <EmptyState title="Group not found" actions={<ButtonLink to="/groups">All groups</ButtonLink>} />
       </Container>
     )
+  const photo = groupPhoto(group.area)
   const organizer = getUser(db, group.organizerId)
   const { upcoming, past } = groupEvents(db, group.id, now)
   const members = db.memberships
@@ -36,7 +40,7 @@ export default function GroupDetailPage() {
       <Link to="/groups" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink">
         <ArrowLeft aria-hidden className="size-4" /> All groups
       </Link>
-      <CategoryCover categoryId={group.categoryId} variant={group.coverVariant} iconSize="lg" className="aspect-[21/6] rounded-card border border-line" />
+      <PhotoFigure photo={photo} className="aspect-[2/1] sm:aspect-[3/1]" />
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <div className="flex flex-wrap gap-2">
@@ -56,7 +60,7 @@ export default function GroupDetailPage() {
               title="Upcoming events"
               action={
                 user?.id === group.organizerId ? (
-                  <ButtonLink to="/events/new" size="sm">
+                  <ButtonLink to={`/events/new?group=${encodeURIComponent(group.id)}`} size="sm">
                     <CalendarPlus aria-hidden /> Schedule an event
                   </ButtonLink>
                 ) : undefined
@@ -74,6 +78,8 @@ export default function GroupDetailPage() {
               <EmptyState title="Nothing scheduled yet">Join the group to hear about the next one.</EmptyState>
             )}
           </section>
+
+          {shared && <GroupDiscussion key={group.id} groupId={group.id} />}
 
           {past.length > 0 && (
             <section className="mt-10" aria-labelledby="g-past">
@@ -95,12 +101,12 @@ export default function GroupDetailPage() {
         <aside className="space-y-4">
           <Card className="p-5">
             <p className="text-2xl font-extrabold text-ink">{groupMemberCount(db, group)}</p>
-            <p className="text-sm text-muted">members (includes seeded demo members)</p>
+            <p className="text-sm text-muted">members{!shared && " (includes seeded demo members)"}</p>
             <div className="mt-4">
               <GroupJoinButton group={group} />
             </div>
             {members.length > 0 && (
-              <div className="mt-4 flex -space-x-2" role="img" aria-label={`${members.length} members with accounts in this demo`}>
+              <div className="mt-4 flex -space-x-2" role="img" aria-label={`${members.length} members`}>
                 {members.slice(0, 8).map((m) => (
                   <Avatar key={m.id} user={m} size="sm" className="ring-2 ring-white" />
                 ))}

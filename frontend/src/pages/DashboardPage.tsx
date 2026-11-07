@@ -115,8 +115,8 @@ export default function DashboardPage() {
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      if (actions.checkIn(e.id)) toast(`Attendance confirmed for ${e.title}. Thanks for showing up!`, { action: { label: 'Leave a review', to: `/events/${e.id}` } })
+                    onClick={async () => {
+                      if (await actions.checkIn(e.id)) toast(`Attendance confirmed for ${e.title}. Thanks for showing up!`, { action: { label: 'Rate activity', to: `/events/${e.id}#rate-activity` } })
                     }}
                   >
                     Confirm
@@ -130,10 +130,10 @@ export default function DashboardPage() {
                   <Star aria-hidden className="size-6 shrink-0 text-[#B7791F]" />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-ink">How was {e.title}?</p>
-                    <p className="text-sm text-muted">Your review rates the event, never the people.</p>
+                    <p className="text-sm text-muted">Give the activity a rating from 1 to 5 stars.</p>
                   </div>
-                  <ButtonLink to={`/events/${e.id}`} size="sm" variant="secondary">
-                    Review
+                  <ButtonLink to={`/events/${e.id}#rate-activity`} size="sm" variant="secondary">
+                    Rate activity
                   </ButtonLink>
                 </Card>
               </li>

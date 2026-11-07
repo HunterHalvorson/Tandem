@@ -7,7 +7,7 @@
  * localStorage is per-browser-profile: it is NOT shared between people or devices. We use the
  * `storage` event so several tabs in the same browser stay in sync (the honest "live" demo).
  */
-import { createSeedDatabase, DB_VERSION } from '../data/seed'
+import { createSeedDatabase, DB_VERSION, RATING_DEMO_EVENT_ID } from '../data/seed'
 import type { Database } from '../types'
 
 const DB_KEY = 'tandem.db.v1'
@@ -61,41 +61,46 @@ function safeParse(raw: string | null): unknown {
   }
 }
 
-export const localStorageAdapter: StorageAdapter = {
-  load() {
-    try {
-      const parsed = safeParse(localStorage.getItem(DB_KEY))
-      return isDatabase(parsed) ? parsed : null
-    } catch {
-      return null
-    }
-  },
-  save(db) {
-    try {
-      localStorage.setItem(DB_KEY, JSON.stringify(db))
-      return { ok: true }
-    } catch (e) {
-      const quota = e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
-      return { ok: false, error: quota ? 'Browser storage is full. Try removing your profile photo or resetting demo data.' : 'Could not save to browser storage.' }
-    }
-  },
-  clear() {
-    try {
-      localStorage.removeItem(DB_KEY)
-    } catch {
-      /* ignore */
-    }
-  },
-  subscribe(onChange) {
-    const handler = (e: StorageEvent) => {
-      if (e.key !== DB_KEY) return
-      const parsed = safeParse(e.newValue)
-      onChange(isDatabase(parsed) ? parsed : null)
-    }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
-  },
+function browserAdapter(key: string): StorageAdapter {
+  return {
+    load() {
+      try {
+        const parsed = safeParse(localStorage.getItem(key))
+        return isDatabase(parsed) ? parsed : null
+      } catch {
+        return null
+      }
+    },
+    save(db) {
+      try {
+        localStorage.setItem(key, JSON.stringify(db))
+        return { ok: true }
+      } catch (e) {
+        const quota = e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
+        return { ok: false, error: quota ? 'Browser storage is full. Try removing your profile photo or resetting demo data.' : 'Could not save to browser storage.' }
+      }
+    },
+    clear() {
+      try {
+        localStorage.removeItem(key)
+      } catch {
+        /* ignore */
+      }
+    },
+    subscribe(onChange) {
+      const handler = (e: StorageEvent) => {
+        if (e.key !== key) return
+        const parsed = safeParse(e.newValue)
+        onChange(isDatabase(parsed) ? parsed : null)
+      }
+      window.addEventListener('storage', handler)
+      return () => window.removeEventListener('storage', handler)
+    },
+  }
 }
+
+export const localStorageAdapter = browserAdapter(DB_KEY)
+export const sharedPreferencesAdapter = browserAdapter('tandem.shared.preferences.v1')
 
 /** In-memory adapter (tests, or environments where storage is blocked). */
 export function createMemoryAdapter(initial: Database | null = null): StorageAdapter {
@@ -116,7 +121,21 @@ export function createMemoryAdapter(initial: Database | null = null): StorageAda
 export function loadOrSeed(adapter: StorageAdapter, now = new Date()): Database {
   if (adapter === localStorageAdapter) removeLegacyKeys()
   const existing = adapter.load()
-  if (existing) return existing
+  if (existing) {
+    if (existing.events.some((event) => event.id === RATING_DEMO_EVENT_ID)
+        || !existing.users.some((user) => user.id === 'usr-alex' && user.isDemo)
+        || !existing.users.some((user) => user.id === 'usr-jordan' && user.isDemo)) return existing
+
+    // Add the rating fixture to older demo databases without resetting saved activity.
+    const fixtures = createSeedDatabase(now)
+    const upgraded = {
+      ...existing,
+      events: [...existing.events, ...fixtures.events.filter((event) => event.id === RATING_DEMO_EVENT_ID)],
+      registrations: [...existing.registrations, ...fixtures.registrations.filter((registration) => registration.eventId === RATING_DEMO_EVENT_ID)],
+    }
+    adapter.save(upgraded)
+    return upgraded
+  }
   const seeded = createSeedDatabase(now)
   adapter.save(seeded)
   return seeded

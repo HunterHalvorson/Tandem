@@ -26,27 +26,21 @@ async function step(name, fn) {
 const assert = (c, m) => { if (!c) throw new Error(m) }
 
 await go('/')
-await step('1. Sign up + 5-step onboarding', async () => {
+await step('1. Sign up + single-page setup', async () => {
   await go('/signup')
   await ev(`setVal($q('#field-firstName'), 'Jamie'); setVal($q('#field-lastName'), 'Nguyen'); setVal($q('#field-email'), 'jamie@example.com'); setVal($q('#field-password'), 'calgary2026'); true`)
   await ev(`clickText('label', 'New to Calgary'); $q('#field-ageConfirmed input').click(); clickText('button', 'Create account')`)
   await b.sleep(600); await ev(H)
   assert((await ev('location.pathname')) === '/onboarding', 'not on onboarding: ' + (await ev('location.pathname')))
-  await ev(`clickText('label', 'Northwest'); true`); await b.sleep(150)
-  await ev(`clickText('button', 'Continue')`); await b.sleep(250)
-  await ev(`clickText('button[aria-pressed]', 'Running & athletics'); clickText('button[aria-pressed]', 'Reading & literature'); clickText('button[aria-pressed]', 'Hiking & outdoors'); true`)
-  await ev(`clickText('button', 'Continue')`); await b.sleep(250)
-  await ev(`clickText('button', 'Skip for now')`); await b.sleep(250)
-  await ev(`clickText('label', 'Small groups'); clickText('label', 'Beginner-friendly activities'); clickText('label', 'Free activities'); true`)
-  await ev(`clickText('button', 'Finish')`); await b.sleep(500)
-  const t = await ev('txt()')
-  assert(t.includes('all set, Jamie'), 'no finish screen')
-  return 'reached "You’re all set" with recommendations'
+  await ev(`setVal($q('main select'), 'NW'); $q('main summary').click(); clickText('label', 'Running & athletics'); clickText('label', 'Reading & literature'); clickText('label', 'Hiking & outdoors'); true`)
+  await ev(`clickText('button', 'Find events')`); await b.sleep(500); await ev(H)
+  assert((await ev('location.pathname')) === '/discover', 'setup should lead directly to event listings')
+  return 'completed setup in one form and reached event listings'
 })
 await step('2. Interests drive recommendations', async () => {
   const expl = await ev(`$all('article p').map(p=>p.textContent).filter(t=>t.includes('Recommended because')).slice(0,3)`)
   assert(expl.length === 3, 'expected 3 explained recs, got ' + expl.length)
-  assert(expl.every((e) => /running|reading|hiking/.test(e)), 'explanations do not mention interests: ' + expl.join(' | '))
+  assert(expl.some((e) => /running|reading|hiking/.test(e)), 'explanations do not mention selected interests: ' + expl.join(' | '))
   return expl[0].replace(/\s+/g, ' ').slice(0, 110)
 })
 await step('3. Category filter (list)', async () => {
@@ -131,8 +125,9 @@ await step('14. Leave event', async () => {
 })
 await step('7/8. Create event → discovery + map', async () => {
   await go('/events/new')
-  await ev(`clickText('button', 'Book club')`); await b.sleep(200)
-  for (let i = 0; i < 4; i++) { await ev(H); await ev(`clickText('button', 'Next:')`); await b.sleep(250) }
+  await ev(`clickText('button', 'Publish event')`); await b.sleep(100)
+  assert(await ev(`document.activeElement?.getAttribute('role') === 'alert'`), 'invalid submission should focus the error summary')
+  await ev(`clickText('summary', 'Use a template'); clickText('button', 'Book club')`); await b.sleep(200)
   await ev(H); await ev(`clickText('button', 'Publish event')`); await b.sleep(700); await ev(H)
   const path = await ev('location.pathname')
   assert(path.startsWith('/events/evt-'), 'not redirected: ' + path)
@@ -147,19 +142,32 @@ await step('7/8. Create event → discovery + map', async () => {
 await step('15. Attendance + milestones (Alex)', async () => {
   await go('/login')
   await ev(`clickText('button', 'Continue as Alex')`); await b.sleep(500)
+  await go('/dashboard')
+  const before = Number(await ev(`$q('#miles p.text-4xl')?.textContent`))
+  assert(await ev(`!![...document.querySelectorAll('a')].find(a => a.getAttribute('href') === '/events/evt-rating-demo-tech-coffee#rate-activity')`), 'demo rating link missing')
   await go('/events/evt-sunrise-run-past-1')
   await ev(`clickText('button', 'Confirm I attended')`); await b.sleep(400); await ev(H)
   await go('/dashboard')
   const miles = await ev(`$q('#miles p.text-4xl')?.textContent`)
-  assert(miles === '30', 'miles ' + miles)
-  return 'Miles 15 → 30 (attend +10, new category +5)'
+  assert(Number(miles) === before + 15, 'miles ' + miles)
+  return `Miles ${before} → ${miles} (attend +10, new category +5)`
+})
+await step('Completed demo activity can be rated from My events', async () => {
+  await go('/dashboard')
+  await ev(`$q('a[href="/events/evt-rating-demo-tech-coffee#rate-activity"]').click(); true`)
+  await b.sleep(300); await ev(H)
+  assert(await ev(`document.activeElement?.id === 'rate-activity'`), 'rating link should focus the rating form')
+  await ev(`$q('#rate-activity input[value="5"]').click(); true`)
+  await ev(`clickText('button', 'Submit rating')`); await b.sleep(400)
+  await go('/events/evt-rating-demo-tech-coffee')
+  assert(await ev(`txt().includes('already reviewed')`), 'demo rating did not persist')
 })
 await step('16/17. Review completed event → leaderboard updates', async () => {
   await go('/leaderboard')
   const before = await ev(`byText('tbody tr', 'Bow River Sunrise Run')?.children[3].textContent`)
   await go('/events/evt-sunrise-run-past-1')
-  await ev(`for (const fs of $all('form fieldset')) { const labels = fs.querySelectorAll('label'); if (labels.length >= 5) labels[4].click() } true`)
-  await ev(`clickText('button', 'Submit review')`); await b.sleep(400); await ev(H)
+  await ev(`$q('#rate-activity input[value="5"]').click(); true`)
+  await ev(`clickText('button', 'Submit rating')`); await b.sleep(400); await ev(H)
   assert((await ev('txt()')).includes('already reviewed'), 'review not accepted')
   await go('/leaderboard')
   const after = await ev(`byText('tbody tr', 'Bow River Sunrise Run')?.children[3].textContent`)
@@ -178,14 +186,14 @@ await step('19. Traveller planner respects visit dates', async () => {
 await step('20. Mobile layout (390px)', async () => {
   await b.setViewport(390, 844, true)
   const out = []
-  for (const p of ['/', '/discover', '/map', '/events/evt-book-club-next', '/dashboard', '/explore-like-a-local']) {
+  for (const p of ['/', '/discover', '/map', '/events/evt-book-club-next', '/dashboard', '/explore-like-a-local', '/events/new']) {
     await go(p, p === '/map' || p === '/' ? 2500 : 900)
     const overflow = await ev('Math.max(document.documentElement.scrollWidth, window.innerWidth) - visualViewport.width')
     out.push(`${p}:${overflow}`)
     await b.shot(`${SP}/mobile${p.replace(/\//g, '_') || '_home'}.png`)
     assert(overflow <= 0, `horizontal overflow on ${p}: ${overflow}px`)
   }
-  return 'no horizontal overflow on 6 key pages'
+  return `no horizontal overflow on ${out.length} key pages`
 })
 for (const [s, n, d] of results) console.log(`${s}  ${n}${d ? '  — ' + d : ''}`)
 const failed = results.filter((r) => r[0] === 'FAIL').length

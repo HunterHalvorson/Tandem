@@ -1,6 +1,7 @@
-import { Bookmark, BookmarkCheck, CalendarDays, MapPin, Sparkles } from 'lucide-react'
+import { Bookmark, BookmarkCheck, CalendarDays, MapPin } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { CATEGORIES } from '../../data/categories'
+import { eventPhoto } from '../../data/calgaryPhotos'
 import { cn } from '../../lib/cn'
 import { formatEventWhen } from '../../lib/dates'
 import { displayName } from '../../lib/format'
@@ -12,7 +13,7 @@ import { useToast } from '../../state/toast'
 import type { CalgaryEvent } from '../../types'
 import { Avatar, Badge } from '../ui/primitives'
 import { AccessSummary, CapacityMeter, JoinButton, PriceTag, RatingBadge, VerificationBadge } from './EventBits'
-import { CategoryCover, CategoryIcon } from './visuals'
+import { CategoryIcon } from './visuals'
 
 export function SaveButton({ event, className }: { event: CalgaryEvent; className?: string }) {
   const { user, actions } = useApp()
@@ -62,38 +63,24 @@ export function EventCard({
   const phase = eventPhase(event, now)
   const Heading = `h${headingLevel}` as 'h3'
   const cat = CATEGORIES[event.categoryId]
+  const photo = eventPhoto(event.venue)
   return (
-    <article className={cn('group relative flex min-w-0 flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition-shadow duration-200 hover:shadow-lift', className)}>
-      <div className="relative aspect-[16/8]">
-        {event.id === 'evt-cranston-run-club' ? (
-          <img
-            src="/images/events/cranston-run-club.jpg"
-            alt="Cranston Run Club"
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <CategoryCover
-            categoryId={event.categoryId}
-            variant={event.coverVariant}
-            className="absolute inset-0"
-          />
-        )}
-        <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
-          <Badge tone="outline" className="bg-white/95">
-            <CategoryIcon id={event.categoryId} />
-            {cat.label}
-          </Badge>
-          {phase === 'live' && <Badge tone="brand">Happening now</Badge>}
-        </div>
-        <SaveButton event={event} className="absolute top-2 right-2 z-10" />
-        {event.isDemo && (
-          <span className="absolute bottom-2 left-3 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[0.65rem] font-semibold tracking-wide text-ink-soft uppercase" title="Fictional event for the hackathon demo at a real public venue">
-            Demo listing
-          </span>
+    <article className={cn('group relative flex min-w-0 flex-col overflow-hidden rounded-control border border-line bg-white hover:border-line-strong', className)}>
+      <div className="relative aspect-[2/1] bg-mist">
+        <img src={photo.src} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+        {photo.kind !== 'Venue photo' && (
+          <span className="absolute bottom-2 left-2 rounded bg-white px-2 py-0.5 text-xs text-ink-soft">{photo.kind}</span>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-2.5 p-4">
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5 font-semibold"><CategoryIcon id={event.categoryId} className="size-4" /> {cat.label}</span>
+            {event.isDemo && <span>Demo listing</span>}
+            {phase === 'live' && <Badge tone="brand">Happening now</Badge>}
+          </div>
+          <SaveButton event={event} className="relative z-10 shrink-0" />
+        </div>
         <Heading className="text-[1.05rem] leading-snug font-bold text-ink">
           <Link to={`/events/${event.id}`} className="outline-none after:absolute after:inset-0 after:z-0 after:content-[''] hover:text-brand-deep focus-visible:after:rounded-card focus-visible:after:outline-3 focus-visible:after:outline-brand">
             {event.title}
@@ -121,12 +108,7 @@ export function EventCard({
           <AccessSummary info={event.accessibility} max={2} />
         </div>
         {rec && (
-          <p className="relative z-10 flex items-start gap-1.5 rounded-lg bg-brand-tint/60 px-2.5 py-2 text-xs text-brand-deep">
-            <Sparkles aria-hidden className="mt-px size-3.5 shrink-0" />
-            <span>
-              <span className="font-bold">{Math.round(rec.score * 100)}% match.</span> {rec.explanation}
-            </span>
-          </p>
+          <p className="text-xs text-muted">{rec.explanation}</p>
         )}
         <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-sm">
           {host && (
@@ -150,7 +132,7 @@ export function EventCard({
 export function EventCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-card border border-line bg-white">
-      <div className="skeleton aspect-[16/8] rounded-none" />
+      <div className="skeleton aspect-[2/1] rounded-none" />
       <div className="space-y-3 p-4">
         <div className="skeleton h-5 w-3/4" />
         <div className="skeleton h-4 w-1/2" />

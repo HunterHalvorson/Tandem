@@ -1,6 +1,7 @@
 import { Eye, EyeOff, UserPlus } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { SharedSignIn } from '../components/auth/SharedSignIn'
 import { GoogleSignInButton } from '../components/auth/GoogleSignInButton'
 import { Button, Card, Checkbox, Container, Field, Input } from '../components/ui/primitives'
 import { BRAND } from '../lib/brand'
@@ -50,7 +51,7 @@ export function ResidencyPicker({ value, onChange, error }: { value: ResidencySt
 
 export default function SignupPage() {
   usePageTitle('Create your account')
-  const { db, actions } = useApp()
+  const { db, actions, shared } = useApp()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))
@@ -62,6 +63,8 @@ export default function SignupPage() {
     setForm((f) => ({ ...f, ...patch }))
     setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !(k in patch))))
   }
+
+  if (shared) return <SharedSignIn next={next} />
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -78,9 +81,8 @@ export default function SignupPage() {
 
   return (
     <Container className="max-w-xl py-10">
-      <p className="text-xs font-bold tracking-wider text-brand uppercase">Step 1 of 5 · Account</p>
       <h1 className="mt-1 text-3xl font-extrabold text-ink">Join {BRAND.name}</h1>
-      <p className="mt-1 text-muted">Find your people through the things you love doing.</p>
+      <p className="mt-1 text-muted">Create an account to join events and groups.</p>
       {errorList.length > 0 && (
         <div ref={summary} tabIndex={-1} role="alert" className="mt-5 rounded-card border border-brand/40 bg-brand-tint p-4 outline-none">
           <p className="font-bold text-brand-deep">Please fix the following:</p>

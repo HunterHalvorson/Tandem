@@ -13,67 +13,65 @@ export function ReviewForm({ event, onDone }: { event: CalgaryEvent; onDone?: ()
   const [access, setAccess] = useState<number | null>(null)
   const [wouldReturn, setWouldReturn] = useState<'yes' | 'no' | 'skip'>('skip')
   const [comment, setComment] = useState('')
-  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!overall || !organization || !accuracy) {
-      setError('Please rate the event overall, its organization, and how accurate the description was.')
-      return
-    }
-    const ok = actions.submitReview(event.id, {
-      overall,
-      organization,
-      accuracy,
-      accessibilityAccuracy: access,
-      wouldReturn: wouldReturn === 'skip' ? null : wouldReturn === 'yes',
-      comment,
-    })
-    if (ok) {
-      toast('Thanks! Your review helps the leaderboard rank events fairly.', { action: { label: 'See the leaderboard', to: '/leaderboard' } })
-      onDone?.()
+    if (!overall || saving) return
+    setSaving(true)
+    try {
+      if (await actions.submitReview(event.id, {
+        overall,
+        organization,
+        accuracy,
+        accessibilityAccuracy: access,
+        wouldReturn: wouldReturn === 'skip' ? null : wouldReturn === 'yes',
+        comment,
+      })) {
+        toast(`Rating saved: ${overall} out of 5 stars.`)
+        onDone?.()
+      }
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
-    <form onSubmit={submit} className="space-y-5" noValidate aria-describedby="review-note">
-      <p id="review-note" className="rounded-lg bg-mist px-3 py-2 text-sm text-ink-soft">
-        You're reviewing the <strong>event</strong>, not the people. {`There's`} no way to rate other attendees — that's on purpose.
-      </p>
-      <StarInput label="Overall, how was it? *" value={overall} onChange={setOverall} />
-      <StarInput label="How well was it organized? *" value={organization} onChange={setOrganization} />
-      <StarInput label="Did the description match what happened? *" value={accuracy} onChange={setAccuracy} />
-      <StarInput label="Was the accessibility information accurate?" value={access} onChange={setAccess} allowNA />
-      <fieldset>
-        <legend className="mb-1.5 text-sm font-semibold text-ink">Would you attend another activity with this group?</legend>
-        <div className="flex flex-wrap gap-2">
-          {(
-            [
-              ['yes', 'Yes'],
-              ['no', 'No'],
-              ['skip', 'Prefer not to say'],
-            ] as const
-          ).map(([v, label]) => (
-            <label key={v} className="cursor-pointer rounded-full border border-line-strong px-3.5 py-1.5 text-sm font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-tint has-[:checked]:text-brand-deep has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand">
-              <input type="radio" name="would-return" className="sr-only" checked={wouldReturn === v} onChange={() => setWouldReturn(v)} />
-              {label}
+    <form onSubmit={submit} className="space-y-4">
+      <StarInput label="Overall rating" value={overall} onChange={setOverall} />
+      <details className="border-y border-line py-2">
+        <summary className="cursor-pointer py-1 text-sm font-semibold">Add optional feedback</summary>
+        <div className="space-y-4 pt-3">
+          <StarInput label="How well was it organized?" value={organization} onChange={setOrganization} />
+          <StarInput label="Did the description match what happened?" value={accuracy} onChange={setAccuracy} />
+          <StarInput label="Was the accessibility information accurate?" value={access} onChange={setAccess} allowNA />
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-semibold text-ink">Would you attend another activity with this group?</legend>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  ['yes', 'Yes'],
+                  ['no', 'No'],
+                  ['skip', 'Prefer not to say'],
+                ] as const
+              ).map(([v, label]) => (
+                <label key={v} className="cursor-pointer rounded-full border border-line-strong px-3.5 py-1.5 text-sm font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-tint has-[:checked]:text-brand-deep has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand">
+                  <input type="radio" name="would-return" className="sr-only" checked={wouldReturn === v} onChange={() => setWouldReturn(v)} />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-muted">Shown as a percentage for the whole event.</p>
+          </fieldset>
+          <div>
+            <label htmlFor="review-comment" className="mb-1.5 block text-sm font-semibold text-ink">
+              Written feedback <span className="font-normal text-muted">(optional)</span>
             </label>
-          ))}
+            <Textarea id="review-comment" maxLength={1000} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="What should future attendees know?" />
+          </div>
         </div>
-        <p className="mt-1.5 text-xs text-muted">Only shown as a percentage for the whole event — never per person.</p>
-      </fieldset>
-      <div>
-        <label htmlFor="review-comment" className="mb-1.5 block text-sm font-semibold text-ink">
-          Written feedback <span className="font-normal text-muted">(optional)</span>
-        </label>
-        <Textarea id="review-comment" maxLength={1000} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="What should future attendees know?" />
-      </div>
-      {error && (
-        <p role="alert" className="text-sm font-medium text-brand-deep">
-          {error}
-        </p>
-      )}
-      <Button type="submit">Submit review</Button>
+      </details>
+      <Button type="submit" disabled={!overall || saving}>{saving ? 'Saving…' : 'Submit rating'}</Button>
     </form>
   )
 }

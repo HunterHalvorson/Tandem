@@ -1,8 +1,10 @@
 import { CalendarDays, Check, Search, UsersRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { CategoryCover, CategoryIcon } from '../components/events/visuals'
+import { CreateGroup } from '../components/events/CreateGroup'
+import { CategoryIcon } from '../components/events/visuals'
 import { Avatar, Badge, Button, Chip, Container, EmptyState, PageHeader } from '../components/ui/primitives'
+import { groupPhoto } from '../data/calgaryPhotos'
 import { CATEGORIES } from '../data/categories'
 import { QUADRANTS } from '../data/calgary'
 import { formatEventWhen } from '../lib/dates'
@@ -30,8 +32,8 @@ export function GroupJoinButton({ group, size = 'md' }: { group: CommunityGroup;
     <Button
       variant="subtle"
       size={size === 'sm' ? 'sm' : 'md'}
-      onClick={() => {
-        if (actions.leaveGroup(group.id)) toast(`You left ${group.name}.`, { tone: 'info' })
+      onClick={async () => {
+        if (await actions.leaveGroup(group.id)) toast(`You left ${group.name}.`, { tone: 'info' })
       }}
     >
       <Check aria-hidden /> Member<span className="sr-only"> of {group.name} — select to leave</span>
@@ -39,12 +41,12 @@ export function GroupJoinButton({ group, size = 'md' }: { group: CommunityGroup;
   ) : (
     <Button
       size={size === 'sm' ? 'sm' : 'md'}
-      onClick={() => {
+      onClick={async () => {
         if (!user) {
           navigate(`/login?next=${encodeURIComponent(location.pathname)}`)
           return
         }
-        if (actions.joinGroup(group.id)) toast(`Welcome to ${group.name}! Their events now appear on your dashboard.`, { action: { label: 'View group', to: `/groups/${group.id}` } })
+        if (await actions.joinGroup(group.id)) toast(`Welcome to ${group.name}! Their events now appear on your dashboard.`, { action: { label: 'View group', to: `/groups/${group.id}` } })
       }}
     >
       Join group<span className="sr-only">: {group.name}</span>
@@ -54,7 +56,7 @@ export function GroupJoinButton({ group, size = 'md' }: { group: CommunityGroup;
 
 export default function GroupsPage() {
   usePageTitle('Community groups')
-  const { db, now } = useApp()
+  const { db, now, shared } = useApp()
   const [q, setQ] = useState('')
   const [quad, setQuad] = useState<Quadrant | null>(null)
   const groups = useMemo(
@@ -76,6 +78,7 @@ export default function GroupsPage() {
         description="Persistent interest groups that host activities again and again. Join a few — their events show up on your dashboard."
       />
       <div className="mb-6 flex flex-wrap items-center gap-3">
+        {shared && <CreateGroup />}
         <label className="relative w-full max-w-sm">
           <span className="sr-only">Search groups</span>
           <Search aria-hidden className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-muted" />
@@ -100,12 +103,16 @@ export default function GroupsPage() {
       ) : (
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {groups.map((g) => {
+            const photo = groupPhoto(g.area)
             const organizer = getUser(db, g.organizerId)
             const next = groupEvents(db, g.id, now).upcoming[0]
             return (
               <li key={g.id}>
                 <article className="relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition-shadow hover:shadow-lift">
-                  <CategoryCover categoryId={g.categoryId} variant={g.coverVariant} className="aspect-[16/7]" />
+                  <div className="relative aspect-[2/1] bg-mist">
+                    <img src={photo.src} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+                    <span className="absolute bottom-2 left-2 rounded bg-white px-2 py-0.5 text-xs text-ink-soft">{photo.kind}</span>
+                  </div>
                   <div className="flex flex-1 flex-col gap-3 p-4">
                     <div className="flex flex-wrap gap-1.5">
                       <Badge tone="outline">
@@ -146,7 +153,7 @@ export default function GroupsPage() {
           })}
         </ul>
       )}
-      <p className="mt-8 text-center text-xs text-muted">Member counts include seeded demo members. Groups have no rankings, likes or follower lists.</p>
+      <p className="mt-8 text-center text-xs text-muted">{!shared && "Member counts include seeded demo members. "}Groups have no rankings, likes or follower lists.</p>
     </Container>
   )
 }

@@ -50,9 +50,10 @@ function bookClubDraft(): EventDraft {
 
 describe('seed data integrity (spec §21)', () => {
   const db = seed()
-  it('has 25–35 events, 8–12 groups and several demo users', () => {
-    expect(db.events.length).toBeGreaterThanOrEqual(25)
-    expect(db.events.length).toBeLessThanOrEqual(35)
+  it('has 25–35 catalog events plus the two standalone demo fixtures', () => {
+    const catalog = db.events.filter((event) => !['evt-cranston-run-club', 'evt-rating-demo-tech-coffee'].includes(event.id))
+    expect(catalog.length).toBeGreaterThanOrEqual(25)
+    expect(catalog.length).toBeLessThanOrEqual(35)
     expect(db.groups.length).toBeGreaterThanOrEqual(8)
     expect(db.groups.length).toBeLessThanOrEqual(12)
     expect(db.users.length).toBeGreaterThanOrEqual(5)
@@ -284,6 +285,20 @@ describe('15/16/17. miles, milestones, reviews, leaderboard', () => {
     expect(computeMiles(db, ALEX, NOW).total).toBe(after.total)
     expect(computeMiles(db, PRIYA, NOW).milestones.find((m) => m.id === 'community-builder')!.achieved).toBe(true)
   })
+  it('adds the completed rating activity to existing demo data without resetting it', () => {
+    const original = seed()
+    const demoId = 'evt-rating-demo-tech-coffee'
+    const adapter = createMemoryAdapter({
+      ...original,
+      events: original.events.filter((event) => event.id !== demoId),
+      registrations: original.registrations.filter((registration) => registration.eventId !== demoId),
+    })
+    const upgraded = loadOrSeed(adapter, NOW)
+    expect(canReview(upgraded, demoId, ALEX, NOW)).toEqual({ ok: true })
+    expect(upgraded.reviews).toEqual(original.reviews)
+    expect(loadOrSeed(adapter, NOW).events.filter((event) => event.id === demoId)).toHaveLength(1)
+  })
+
   it('only confirmed attendees can review, once; leaderboard reacts', () => {
     let db = seed()
     const evId = 'evt-photo-past'
@@ -295,7 +310,9 @@ describe('15/16/17. miles, milestones, reviews, leaderboard', () => {
     const extra = { ...getUser(db, ALEX)!, id: 'usr-test' }
     db = { ...db, users: [...db.users, extra], registrations: [...db.registrations, { id: 'reg-x', eventId: evId, userId: 'usr-test', status: 'going', joinedAt: NOW.toISOString(), checkedInAt: NOW.toISOString(), isDemo: false }] }
     expect(canReview(db, evId, 'usr-test', NOW).ok).toBe(true)
-    db = submitReview(db, evId, 'usr-test', { overall: 5, organization: 5, accuracy: 5, accessibilityAccuracy: null, wouldReturn: true, comment: 'Great' }, NOW)
+    const starsOnly = { overall: 5, organization: null, accuracy: null, accessibilityAccuracy: null, wouldReturn: null, comment: '' }
+    expect(() => submitReview(db, evId, 'usr-test', { ...starsOnly, overall: 6 }, NOW)).toThrow('1 to 5 stars')
+    db = submitReview(db, evId, 'usr-test', starsOnly, NOW)
     expect(canReview(db, evId, 'usr-test', NOW).ok).toBe(false)
     lb = buildLeaderboard(db, DEFAULT_LEADERBOARD_FILTERS, NOW)
     expect(lb.ranked.some((e) => e.key === 'series-nose-hill-photo')).toBe(true)

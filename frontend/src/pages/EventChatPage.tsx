@@ -11,7 +11,7 @@ import { formatEventRange, formatRelative } from '../lib/dates'
 import { displayName, pluralize } from '../lib/format'
 import { usePageTitle } from '../lib/hooks'
 import { announcements, canAccessChat, eventMessages, eventParticipants, hasReported, MAX_MESSAGE_LENGTH } from '../services/chat'
-import { eventPhase, getEvent, getRegistration, getUser } from '../services/db'
+import { eventPhase, getEvent, getRegistration, getUser, registeredCount } from '../services/db'
 import { useApp } from '../state/AppStore'
 import { useDisplay } from '../state/display'
 import { useToast } from '../state/toast'
@@ -40,10 +40,11 @@ export default function EventChatPage() {
 }
 
 function Chat({ event }: { event: CalgaryEvent }) {
-  const { db, user, now, actions } = useApp()
+  const { db, user, now, actions, shared } = useApp()
   const { reducedMotion } = useDisplay()
   const { toast } = useToast()
   const [body, setBody] = useState('')
+  const [sending, setSending] = useState(false)
   const [announce, setAnnounce] = useState(false)
   const [reporting, setReporting] = useState<ChatMessage | null>(null)
   const [leaveOpen, setLeaveOpen] = useState(false)
@@ -67,12 +68,17 @@ function Chat({ event }: { event: CalgaryEvent }) {
     if (el) el.scrollTop = el.scrollHeight
   }, [])
 
-  const send = () => {
-    if (!body.trim()) return
-    if (actions.sendMessage(event.id, body, announce && isHost)) {
-      setBody('')
-      setAnnounce(false)
-      stick.current = true
+  const send = async () => {
+    if (!body.trim() || sending) return
+    setSending(true)
+    stick.current = true
+    try {
+      if (await actions.sendMessage(event.id, body, announce && isHost)) {
+        setBody('')
+        setAnnounce(false)
+      }
+    } finally {
+      setSending(false)
     }
   }
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -96,7 +102,7 @@ function Chat({ event }: { event: CalgaryEvent }) {
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-base font-bold text-ink sm:text-lg">{event.title}</h1>
               <p className="truncate text-xs text-muted">
-                {formatEventRange(event.startsAt, event.endsAt, now)} · {pluralize(people.members.length + people.anonymous + 1, 'person', 'people')}
+                {formatEventRange(event.startsAt, event.endsAt, now)} · {pluralize(registeredCount(db, event) + 1, 'person', 'people')}
               </p>
             </div>
             <Badge tone="success" className="max-sm:hidden" title="Messages sync live between tabs in this browser. They are stored locally — this is a single-browser demo.">
@@ -149,6 +155,7 @@ function Chat({ event }: { event: CalgaryEvent }) {
                   <textarea
                     id="chat-input"
                     value={body}
+                    readOnly={sending}
                     onChange={(e) => setBody(e.target.value)}
                     onKeyDown={onKey}
                     rows={1}
@@ -157,7 +164,7 @@ function Chat({ event }: { event: CalgaryEvent }) {
                     aria-describedby="chat-hint"
                     className="max-h-32 min-h-11 flex-1 resize-y rounded-control border border-line-strong bg-white px-3 py-2.5 text-[0.9375rem]"
                   />
-                  <Button type="submit" disabled={!body.trim()} aria-label="Send message">
+                  <Button type="submit" disabled={sending || !body.trim()} aria-label="Send message">
                     <Send aria-hidden /> <span className="max-sm:sr-only">Send</span>
                   </Button>
                 </div>
@@ -189,7 +196,7 @@ function Chat({ event }: { event: CalgaryEvent }) {
             {event.firstTime?.howToFindUs && <p className="mt-3 text-xs text-ink-soft"><strong>Finding the group:</strong> {event.firstTime.howToFindUs}</p>}
           </Card>
           <Card className="p-4">
-            <h2 className="text-sm font-bold text-ink">People ({people.members.length + people.anonymous + 1})</h2>
+            <h2 className="text-sm font-bold text-ink">People ({registeredCount(db, event) + 1})</h2>
             <ul className="mt-3 space-y-2.5">
               {people.host && (
                 <li className="flex items-center gap-2.5 text-sm">
@@ -219,7 +226,8 @@ function Chat({ event }: { event: CalgaryEvent }) {
               </Button>
             )}
             <p className="px-1 text-xs text-muted">
-              Single-browser demo: messages are saved in this browser’s storage. Open this chat in another tab signed in as a different demo account to see live updates.
+              {shared ? 'Messages sync with the host and attendees. The latest 100 messages are shown.'
+                : 'Single-browser demo: open this chat in another tab as a different demo account to see live updates.'}
             </p>
           </div>
         </aside>
@@ -238,8 +246,8 @@ function Chat({ event }: { event: CalgaryEvent }) {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (actions.leaveEvent(event.id)) {
+              onClick={async () => {
+                if (await actions.leaveEvent(event.id)) {
                   setLeaveOpen(false)
                   toast(`You left ${event.title}.`, { tone: 'info' })
                 }

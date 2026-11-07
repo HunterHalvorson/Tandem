@@ -1,23 +1,18 @@
 import {
   Accessibility,
-  CalendarPlus,
   ChevronDown,
   Compass,
   Info,
   LayoutDashboard,
   LogOut,
   Map as MapIcon,
-  Menu,
-  Plane,
   Plus,
   RefreshCw,
   Settings,
-  Trophy,
   User as UserIcon,
   Users,
   UsersRound,
   X,
-  BarChart3,
 } from 'lucide-react'
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
@@ -40,12 +35,15 @@ import { Avatar, ButtonLink, Segmented, Switch } from '../ui/primitives'
 import { PageSkeleton } from './PageSkeleton'
 
 const NAV = [
-  { to: '/discover', label: 'Discover', icon: Compass },
-  { to: '/map', label: 'Calgary Map', icon: MapIcon },
+  { to: '/discover', label: 'Events', icon: Compass },
+  { to: '/map', label: 'Map', icon: MapIcon },
   { to: '/groups', label: 'Groups', icon: UsersRound },
-  { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { to: '/explore-like-a-local', label: 'Explore Like a Local', icon: Plane },
 ]
+
+function usePrimaryLinks() {
+  const { user } = useApp()
+  return user ? [...NAV, { to: '/dashboard', label: 'My events', icon: LayoutDashboard }] : NAV
+}
 
 export function AppShell() {
   const location = useLocation()
@@ -82,7 +80,7 @@ export function AppShell() {
       </a>
       <Banners />
       <Header />
-      <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 pb-20 outline-none lg:pb-0">
+      <main id="main" ref={mainRef} tabIndex={-1} className="flex-1 outline-none">
         <Suspense fallback={<PageSkeleton />}>
           <Outlet />
         </Suspense>
@@ -96,12 +94,15 @@ export function AppShell() {
 /* ------------------------------------------------------------------ banners */
 
 function Banners() {
-  const { db, now, actions } = useApp()
+  const { db, now, actions, shared, sharedOffline } = useApp()
   const { toast } = useToast()
   const [dismissed, setDismissed] = useState(isBannerDismissed)
-  const stale = isSeedStale(db, now)
+  const stale = !shared && isSeedStale(db, now)
   return (
     <div id="site-banners">
+      {sharedOffline && <p role="status" className="bg-warning-tint px-4 py-2 text-center text-sm text-warning">
+        The shared workspace couldn’t refresh. Tandem will retry automatically.
+      </p>}
       {stale && (
         <div className="bg-warning-tint px-4 py-2 text-center text-sm text-warning">
           <RefreshCw aria-hidden className="mr-1.5 inline size-4 align-[-3px]" />
@@ -121,7 +122,9 @@ function Banners() {
       {!dismissed && (
         <div className="relative bg-ink px-10 py-2 text-center text-xs text-white/90 sm:text-sm">
           <Info aria-hidden className="mr-1.5 inline size-4 align-[-3px]" />
-          Hackathon prototype: demo accounts and ID verification are <strong className="text-white">simulated</strong>, data lives only in this browser, and seeded events are fictional.{' '}
+          {shared
+            ? 'Shared workspace: events, attendance and discussions sync through Supabase. ID verification is simulated.'
+            : <>Hackathon prototype: demo accounts and ID verification are <strong className="text-white">simulated</strong>, data lives only in this browser, and seeded events are fictional.</>}{' '}
           <Link to="/about" className="font-semibold text-white underline underline-offset-2">
             About this demo
           </Link>
@@ -146,7 +149,7 @@ function Banners() {
 
 function Header() {
   const { user } = useApp()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const links = usePrimaryLinks()
   return (
     <header id="site-header" className="sticky top-0 z-[1000] border-b border-line bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex h-16 w-full items-center gap-2 px-4 sm:px-6 lg:px-8">
@@ -155,7 +158,7 @@ function Header() {
         </Link>
         <nav aria-label="Primary" className="ml-2 hidden min-w-0 flex-1 overflow-x-auto lg:block">
           <ul className="flex w-max items-center gap-1">
-            {NAV.map((n) => (
+            {links.map((n) => (
               <li key={n.to}>
                 <NavLink
                   to={n.to}
@@ -173,8 +176,8 @@ function Header() {
           </ul>
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <ButtonLink to="/events/new" size="sm" className="max-sm:hidden">
-            <Plus aria-hidden /> Create Event
+          <ButtonLink to="/events/new" size="sm" variant="secondary" className="max-lg:hidden">
+            <Plus aria-hidden /> Create event
           </ButtonLink>
           <DisplayMenu />
           {user ? (
@@ -184,23 +187,13 @@ function Header() {
               <ButtonLink to="/login" variant="ghost" size="sm">
                 Sign in
               </ButtonLink>
-              <ButtonLink to="/signup" variant="secondary" size="sm" className="max-md:hidden">
-                Join free
+              <ButtonLink to="/signup" variant="secondary" size="sm" className="max-sm:hidden">
+                Sign up
               </ButtonLink>
             </>
           )}
-          <button
-            type="button"
-            className="grid size-11 place-items-center rounded-control hover:bg-mist lg:hidden"
-            aria-label="Open menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
-          >
-            <Menu aria-hidden className="size-6" />
-          </button>
         </div>
       </div>
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>
   )
 }
@@ -264,7 +257,7 @@ function DisplayMenu() {
 }
 
 function AccountMenu() {
-  const { user, db, now, actions } = useApp()
+  const { user, db, now, actions, shared } = useApp()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
@@ -304,31 +297,23 @@ function AccountMenu() {
             <VerificationBadge status={verificationStatus(user, now)} />
           </div>
           <hr className="my-1 border-line" />
-          <Link to="/dashboard" className={item} onClick={() => setOpen(false)}>
-            <LayoutDashboard aria-hidden /> Dashboard
-          </Link>
           <Link to="/profile" className={item} onClick={() => setOpen(false)}>
             <UserIcon aria-hidden /> My profile
           </Link>
           <Link to="/settings" className={item} onClick={() => setOpen(false)}>
             <Settings aria-hidden /> Privacy & accessibility settings
           </Link>
-          <button
-            type="button"
-            className={item}
-            onClick={() => {
-              setOpen(false)
-              setSwitchOpen(true)
-            }}
-          >
-            <Users aria-hidden /> Switch demo account
-          </button>
+          {!shared && (
+            <button type="button" className={item} onClick={() => { setOpen(false); setSwitchOpen(true) }}>
+              <Users aria-hidden /> Switch demo account
+            </button>
+          )}
           <hr className="my-1 border-line" />
           <button
             type="button"
             className={item}
-            onClick={() => {
-              actions.signOut()
+            onClick={async () => {
+              if (!await actions.signOut()) return
               setOpen(false)
               toast('Signed out.', { tone: 'info' })
               navigate('/')
@@ -383,99 +368,20 @@ export function SwitchAccountDialog({ open, onClose }: { open: boolean; onClose:
   )
 }
 
-function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { user, actions } = useApp()
-  const navigate = useNavigate()
-  const location = useLocation()
-  useEffect(() => {
-    onClose()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname])
-  const link = 'flex items-center gap-3 rounded-lg px-3 py-3 text-base font-semibold text-ink hover:bg-mist [&_svg]:size-5 [&_svg]:text-muted'
-  return (
-    <Dialog open={open} onClose={onClose} title="Menu" variant="sheet">
-      <nav aria-label="Mobile">
-        <ButtonLink to="/events/new" className="mb-3 w-full">
-          <CalendarPlus aria-hidden /> Create Event
-        </ButtonLink>
-        {NAV.map((n) => (
-          <NavLink key={n.to} to={n.to} className={({ isActive }) => cn(link, isActive && 'bg-brand-tint text-brand-deep')}>
-            <n.icon aria-hidden /> {n.label}
-          </NavLink>
-        ))}
-        <NavLink to="/impact" className={({ isActive }) => cn(link, isActive && 'bg-brand-tint text-brand-deep')}>
-          <BarChart3 aria-hidden /> Community impact
-        </NavLink>
-        <hr className="my-2 border-line" />
-        {user ? (
-          <>
-            <NavLink to="/dashboard" className={link}>
-              <LayoutDashboard aria-hidden /> Dashboard
-            </NavLink>
-            <NavLink to="/profile" className={link}>
-              <UserIcon aria-hidden /> My profile
-            </NavLink>
-            <NavLink to="/settings" className={link}>
-              <Settings aria-hidden /> Settings
-            </NavLink>
-            <button
-              type="button"
-              className={link + ' w-full'}
-              onClick={() => {
-                actions.signOut()
-                onClose()
-                navigate('/')
-              }}
-            >
-              <LogOut aria-hidden /> Sign out
-            </button>
-          </>
-        ) : (
-          <>
-            <NavLink to="/login" className={link}>
-              <UserIcon aria-hidden /> Sign in
-            </NavLink>
-            <NavLink to="/signup" className={link}>
-              <Plus aria-hidden /> Create account
-            </NavLink>
-          </>
-        )}
-        <NavLink to="/about" className={link}>
-          <Info aria-hidden /> About this demo
-        </NavLink>
-      </nav>
-    </Dialog>
-  )
-}
-
 function MobileBottomNav() {
-  const { user } = useApp()
-  const items = [
-    { to: '/discover', label: 'Discover', icon: Compass },
-    { to: '/map', label: 'Map', icon: MapIcon },
-    { to: '/events/new', label: 'Create', icon: Plus, primary: true },
-    { to: '/groups', label: 'Groups', icon: UsersRound },
-    { to: user ? '/dashboard' : '/login', label: user ? 'Me' : 'Sign in', icon: UserIcon },
-  ]
+  const links = usePrimaryLinks()
+  const items = [...links, { to: '/events/new', label: 'Create', icon: Plus }]
   return (
-    <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-0 z-[1000] border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-      <ul className="mx-auto grid max-w-lg grid-cols-5">
-        {items.map((it) => (
-          <li key={it.label}>
-            <NavLink
-              to={it.to}
-              className={({ isActive }) =>
-                cn('flex flex-col items-center gap-0.5 py-2 text-[0.7rem] font-semibold', isActive ? 'text-brand' : 'text-ink-soft')
-              }
-            >
-              {it.primary ? (
-                <span className="grid size-9 place-items-center rounded-full bg-brand text-white shadow-card">
-                  <it.icon aria-hidden className="size-5" />
-                </span>
-              ) : (
-                <it.icon aria-hidden className="size-6" />
-              )}
-              {it.label}
+    <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-[1000] border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <ul className="mx-auto flex max-w-lg">
+        {items.map((item) => (
+          <li key={item.to} className="min-w-0 flex-1">
+            <NavLink to={item.to} className={({ isActive }) => cn(
+              'flex min-h-14 flex-col items-center justify-center gap-0.5 border-t-2 px-1 text-center text-xs leading-tight font-semibold',
+              isActive ? 'border-brand text-brand-deep' : 'border-transparent text-ink-soft hover:bg-mist',
+            )}>
+              <item.icon aria-hidden className="size-5" />
+              {item.label}
             </NavLink>
           </li>
         ))}
@@ -484,44 +390,22 @@ function MobileBottomNav() {
   )
 }
 
-/* ------------------------------------------------------------------ footer */
-
 function Footer() {
-  const col = 'space-y-2 text-sm'
-  const a = 'text-ink-soft hover:text-brand'
+  const links = [
+    { to: '/explore-like-a-local', label: 'Visitor planner' },
+    { to: '/leaderboard', label: 'Event ratings' },
+    { to: '/impact', label: 'Community impact' },
+    { to: '/about', label: 'About Tandem' },
+  ]
   return (
-    <footer className="mt-16 border-t border-line bg-white pb-24 lg:pb-0">
-      <div className="mx-auto grid grid-cols-1 max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
-        <div>
-          <Logo />
-        </div>
-        <div>
-          <h2 className="mb-3 text-sm font-bold text-ink">Explore</h2>
-          <ul className={col}>
-            <li><Link className={a} to="/discover">Discover events</Link></li>
-            <li><Link className={a} to="/map">Calgary map</Link></li>
-            <li><Link className={a} to="/groups">Community groups</Link></li>
-            <li><Link className={a} to="/explore-like-a-local">Explore Like a Local</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h2 className="mb-3 text-sm font-bold text-ink">Community</h2>
-          <ul className={col}>
-            <li><Link className={a} to="/leaderboard">Event leaderboard</Link></li>
-            <li><Link className={a} to="/impact">Community impact</Link></li>
-            <li><Link className={a} to="/events/new">Host an event</Link></li>
-            <li><Link className={a} to="/settings">Privacy & accessibility</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h2 className="mb-3 text-sm font-bold text-ink">This prototype</h2>
-          <ul className={col}>
-            <li><Link className={a} to="/about">About this demo</Link></li>
-            <li><Link className={a} to="/about#limitations">Limitations</Link></li>
-            <li><Link className={a} to="/about#privacy">Privacy & data</Link></li>
-          </ul>
-        </div>
-      </div>
+    <footer className="mt-10 border-t border-line bg-white pb-20 lg:pb-0">
+      <nav aria-label="More from Tandem" className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <ul className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
+          {links.map((link) => (
+            <li key={link.to}><Link className="text-ink-soft hover:underline" to={link.to}>{link.label}</Link></li>
+          ))}
+        </ul>
+      </nav>
       <div className="border-t border-line">
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-6 text-xs text-muted sm:px-6 lg:px-8">
           <p>

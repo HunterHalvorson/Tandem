@@ -104,6 +104,16 @@ test/       vitest specs for services
 3. **2026-11-07** — "should be able to create profile, and login with google accounts"
 4. **2026-11-07** — "the product is called "Tandem"" → renamed everywhere (was "TNadem" from the spec PDF).
 
+5. **2026-11-07** — Implement real-time chat, event attendance and group collaboration with Supabase on a separate branch. Test and commit locally, then get approval before pushing.
+
+6. **2026-11-07** — Simplify navigation and reduce the number of steps in the UI. Review Git branches for excess work.
+
+7. **2026-11-07** — Add real Calgary photos to the events.
+
+8. **2026-11-07** — Let attendees give an activity a rating of up to five stars.
+
+9. **2026-11-07** — Add a completed demo activity that can be rated and merge the collaboration branch into main.
+
 ## 8. Change log
 
 - **2026-11-07 (session 1)** — Built the whole app on top of the teammate's Vite/React scaffold in `frontend/`
@@ -145,12 +155,28 @@ test/       vitest specs for services
   storage keys (`tandem.*`; old `tnadem.*` keys are cleared once on load, so browsers start with fresh demo data),
   package names, e2e scripts, README. Reworded copy that explained the name.
 
+- **2026-11-07** — Added optional Supabase mode with Google OAuth, a shared event catalog, RSVP and attendance,
+  event chat, group creation, membership and private discussion. The Supabase migration and SQL regression tests
+  live under `supabase/`. The seeded browser demo is still available with the Supabase variables unset.
+
+- **2026-11-07** — Replaced onboarding and event publishing wizards with single-page forms. Simplified the homepage,
+  event listings and main navigation. Advanced event fields and filters are available in expandable sections.
+
+- **2026-11-07** — Added 12 Wikimedia Commons photos to event cards and details. Known public venues use a
+  venue or neighbourhood photo. Other listings use a labelled Calgary skyline photo. Event details show credits and licenses.
+
+- **2026-11-07** — Made the overall star rating the only required review input. Added a direct link from My events
+  and a Supabase migration that shares new ratings while enforcing attendance and one rating per user per event.
+
+- **2026-11-07** — Added Calgary Tech Coffee Meetup as a completed, unrated activity with Alex already checked in.
+  Existing demo databases get the fixture without a reset.
+
 ### Status vs spec (update as you go: ✅ done · 🟡 partial · ⬜ todo)
 
 | Spec § | Feature | Status |
 |---|---|---|
 | 3 | Branding, logo (tandem + 2 smiley riders), palette, Inter | ✅ |
-| 5 | Signup + 5-step onboarding, demo accounts, simulated login | ✅ |
+| 5 | Signup + single-page profile setup, demo accounts, simulated login | ✅ |
 | 6 | Simulated ID verification (not verified / pending / demo verified) | ✅ |
 | 7 | Tandem Miles + milestones (no public ranking of people) | ✅ |
 | 8 | Discovery: cards, filters (price slider, free, category, quadrant, date, size, access, other), sorting | ✅ |
@@ -174,10 +200,10 @@ test/       vitest specs for services
 1. **Create the Google OAuth client id** (README → "Sign in with Google"), put it in `frontend/.env.local`, restart
    `npm run dev`, and test with a real account (add teammates/judges as test users or publish the consent screen).
    For a deployed demo, add its URL to *Authorised JavaScript origins*.
-2. Rehearse the §10 demo script once end-to-end in a real browser; reset demo data right before judging.
+2. Rehearse the updated single-page setup and event publishing flows. Reset demo data right before judging.
 3. Optional upgrades if time remains (in value order):
-   - Real shared backend (Supabase: auth, Postgres, realtime chat) behind `services/storage.ts` → true multi-user demo.
-   - More seed events/groups (spec suggests 25–35 events; we have 35 incl. past) and a few photos.
+   - Configure the shared Supabase project and verify Google OAuth and Realtime with two browser profiles (README).
+   - More seed groups and photos for venues that currently use the Calgary skyline.
    - French UI strings (Calgary/Canada bilingual audience), PWA install + offline shell.
    - Host-side tools: QR check-in, waitlist when an event is full, recurring-event creation.
 4. Keep `npm test`, `npm run build`, `npm run e2e` and `npm run a11y` green after any change (dev server must be
@@ -187,10 +213,10 @@ test/       vitest specs for services
 
 1. `npm run dev`, open http://localhost:5173, Settings → Your data → **Reset demo data** (seed dates are relative to
    the reset day). Dismiss the black "Hackathon prototype" banner if you want more room.
-2. Story: new student → *Create account* → onboarding (New to Calgary, NW, Running/Reading/Hiking, Small groups,
-   Beginner-friendly, Free) → three explained recommendations → Discover (price slider, Wheelchair accessible,
+2. Story: new student → *Create account* → choose NW and interests → *Find events* →
+   Discover (price slider, Wheelchair accessible,
    try search "free hiking this weekend in NW") → *Explore Calgary Map* → NW chip → click a marker → Join →
-   join *Bow River Sunrise Run* (12 → 13) → group chat → dashboard → *Create Event* → *Book club* template → Next ×4 →
+   join *Bow River Sunrise Run* (12 → 13) → group chat → dashboard → *Create event* → *Use a template* → *Book club* →
    Publish (appears in Discover + map) → toggle **Ease Into It** → account menu → *Switch demo account* → **Sam** →
    *Explore Like a Local* → *Join all* → switch to **Alex** → dashboard *Confirm* past run (+15 Miles) → review it →
    Leaderboard + Community impact → closing line: "Tandem doesn't measure how many people follow you. It helps you

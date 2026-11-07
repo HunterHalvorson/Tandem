@@ -26,7 +26,8 @@ const SECTIONS = [
 
 export default function SettingsPage() {
   usePageTitle('Privacy & accessibility settings')
-  const { user, now, actions } = useApp()
+  const { user, now, actions, shared } = useApp()
+  const [savingPrivacy, setSavingPrivacy] = useState(false)
   const { prefs, update } = useDisplay()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -45,7 +46,7 @@ export default function SettingsPage() {
   return (
     <Container className="py-8">
       <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Privacy & accessibility</h1>
-      <p className="mt-1 text-muted">Changes save automatically and live only in this browser.</p>
+      <p className="mt-1 text-muted">{shared ? "Changes save automatically. Your display name and attendance visibility sync across the shared workspace." : "Changes save automatically and live only in this browser."}</p>
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
         <nav aria-label="Settings sections" className="lg:sticky lg:top-20 lg:self-start">
           <ul className="flex gap-1 overflow-x-auto lg:flex-col">
@@ -61,13 +62,17 @@ export default function SettingsPage() {
 
         <div className="min-w-0 space-y-8">
           <SettingsCard id="privacy" title="Privacy" description="Choose what other members can see. Accessibility preferences are private unless you opt in.">
-            <PrivacyEditor
-              value={user.privacy}
-              onChange={(privacy) => {
-                actions.updateProfile({ privacy })
-                saved()
-              }}
-            />
+            <fieldset disabled={savingPrivacy}>
+              <legend className="sr-only">Profile privacy</legend>
+              <PrivacyEditor value={user.privacy} onChange={async (privacy) => {
+                setSavingPrivacy(true)
+                try {
+                  if (await actions.updateProfile({ privacy })) saved()
+                } finally {
+                  setSavingPrivacy(false)
+                }
+              }} />
+            </fieldset>
           </SettingsCard>
 
           <SettingsCard id="comfort" title="Comfort & Access" description="Practical preferences that shape your recommendations. Never medical labels.">
@@ -133,7 +138,7 @@ export default function SettingsPage() {
             <VerificationFlow />
           </SettingsCard>
 
-          <SettingsCard id="data" title="Your data" description={`Everything ${BRAND.name} knows about you lives in this browser’s local storage.`}>
+          <SettingsCard id="data" title="Your data" description={shared ? "Collaboration data is shared through Supabase. Your profile preferences, earlier browser-only reviews and reports are stored in this browser." : `Everything ${BRAND.name} knows about you lives in this browser’s local storage.`}>
             <p className="mb-4 rounded-lg bg-mist px-3 py-2 text-sm text-ink-soft">
               <strong className="text-ink">Signed in with:</strong>{' '}
               {user.authProvider === 'google' ? `Google (${user.email})` : user.isDemo ? 'Demo account (simulated sign-in)' : `Email — ${user.email} (simulated sign-in)`}
@@ -148,16 +153,16 @@ export default function SettingsPage() {
               >
                 <Download aria-hidden /> Download my data
               </Button>
-              <Button variant="secondary" onClick={() => setResetOpen(true)}>
+              {!shared && <Button variant="secondary" onClick={() => setResetOpen(true)}>
                 <RotateCcw aria-hidden /> Reset demo data
-              </Button>
+              </Button>}
               <Button variant="danger" onClick={() => setDeleteOpen(true)}>
                 <Trash2 aria-hidden /> Delete my account
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  actions.signOut()
+                onClick={async () => {
+                  if (!await actions.signOut()) return
                   navigate('/')
                 }}
               >
@@ -165,7 +170,7 @@ export default function SettingsPage() {
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted">
-              Passwords, government IDs and medical information are never stored. Reset regenerates the demo world with dates starting today (handy before a demo).
+              Passwords, government IDs and medical information are never stored. {!shared && "Reset regenerates the demo world with dates starting today."}
             </p>
           </SettingsCard>
         </div>
@@ -198,7 +203,7 @@ export default function SettingsPage() {
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         title="Delete your account?"
-        description="Your profile, registrations, messages, reviews and hosted events will be permanently removed from this browser."
+        description={shared ? "Your account, hosted events, groups, registrations, ratings and messages will be removed from the shared workspace." : "Your profile, registrations, messages, reviews and hosted events will be permanently removed from this browser."}
         footer={
           <>
             <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
@@ -207,8 +212,8 @@ export default function SettingsPage() {
             <Button
               variant="danger"
               disabled={deleteText.trim().toUpperCase() !== 'DELETE'}
-              onClick={() => {
-                actions.deleteMyAccount()
+              onClick={async () => {
+                if (!await actions.deleteMyAccount()) return
                 setDeleteOpen(false)
                 toast('Your account and its data were deleted.', { tone: 'info' })
                 navigate('/')
