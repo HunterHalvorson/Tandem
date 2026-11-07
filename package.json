@@ -1,0 +1,15 @@
+{
+  "name": "tandem-workspace",
+  "private": true,
+  "description": "Tandem — Calgary community connection platform (Code the Change hackathon). The app lives in frontend/.",
+  "scripts": {
+    "postinstall": "npm --prefix frontend install",
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix frontend test",
+    "lint": "npm --prefix frontend run lint",
+    "preview": "npm --prefix frontend run preview",
+    "e2e": "npm --prefix frontend run e2e",
+    "a11y": "npm --prefix frontend run a11y"
+  }
+}
