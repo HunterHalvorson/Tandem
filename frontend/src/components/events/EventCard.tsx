@@ -65,8 +65,21 @@ export function EventCard({
   return (
     <article className={cn('group relative flex min-w-0 flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition-shadow duration-200 hover:shadow-lift', className)}>
       <div className="relative aspect-[16/8]">
-        <CategoryCover categoryId={event.categoryId} variant={event.coverVariant} className="absolute inset-0" />
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+        {event.id === 'evt-cranston-run-club' ? (
+          <img
+            src="/images/events/cranston-run-club.jpg"
+            alt="Cranston Run Club"
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <CategoryCover
+            categoryId={event.categoryId}
+            variant={event.coverVariant}
+            className="absolute inset-0"
+          />
+        )}
+        <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
           <Badge tone="outline" className="bg-white/95">
             <CategoryIcon id={event.categoryId} />
             {cat.label}
@@ -75,7 +88,7 @@ export function EventCard({
         </div>
         <SaveButton event={event} className="absolute top-2 right-2 z-10" />
         {event.isDemo && (
-          <span className="absolute bottom-2 left-3 rounded bg-white/90 px-1.5 py-0.5 text-[0.65rem] font-semibold tracking-wide text-ink-soft uppercase" title="Fictional event for the hackathon demo at a real public venue">
+          <span className="absolute bottom-2 left-3 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[0.65rem] font-semibold tracking-wide text-ink-soft uppercase" title="Fictional event for the hackathon demo at a real public venue">
             Demo listing
           </span>
         )}

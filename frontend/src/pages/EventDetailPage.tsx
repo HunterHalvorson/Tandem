@@ -161,7 +161,20 @@ function EventDetail({ event }: { event: CalgaryEvent }) {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <article className="min-w-0">
-          <CategoryCover categoryId={event.categoryId} variant={event.coverVariant} iconSize="lg" className="aspect-[21/8] rounded-card border border-line" />
+          {event.id === 'evt-cranston-run-club' ? (
+            <img
+              src="/images/events/cranston-run-club.jpg"
+              alt="Cranston Run Club"
+              className="aspect-[21/8] w-full rounded-card border border-line object-cover"
+            />
+          ) : (
+            <CategoryCover
+              categoryId={event.categoryId}
+              variant={event.coverVariant}
+              iconSize="lg"
+              className="aspect-[21/8] rounded-card border border-line"
+            />
+          )}
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Badge tone="outline">
               <CategoryIcon id={event.categoryId} /> {cat.label}
