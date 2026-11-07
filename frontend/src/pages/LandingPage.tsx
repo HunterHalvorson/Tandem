@@ -2,7 +2,6 @@ import {
   Accessibility,
   ArrowRight,
   BadgeCheck,
-  Bike,
   CalendarDays,
   Camera,
   Coffee,
@@ -27,19 +26,19 @@ import { LogoMark } from '../components/brand/Logo'
 import { EventCard } from '../components/events/EventCard'
 import { CategoryCover, CategoryIcon } from '../components/events/visuals'
 import { LazyCalgaryMap } from '../components/map/lazy'
-import { Badge, ButtonLink, Card, Container } from '../components/ui/primitives'
+import { ButtonLink, Card, Container } from '../components/ui/primitives'
 import { CATEGORIES } from '../data/categories'
 import { QUADRANT_INFO, QUADRANTS } from '../data/calgary'
 import { GUEST_USER } from '../data/guest'
 import { BRAND, MILES_NAME } from '../lib/brand'
-import { addDays, formatEventWhen, formatTime, nextWeekday, toDateInput } from '../lib/dates'
+import { addDays, formatTime, nextWeekday, toDateInput } from '../lib/dates'
 import { formatPrice } from '../lib/format'
 import { usePageTitle } from '../lib/hooks'
-import { getEvent, registeredCount, spotsLeft } from '../services/db'
+import { spotsLeft } from '../services/db'
 import { discoverableEvents } from '../services/filters'
 import { planItinerary } from '../services/itinerary'
 import { useApp } from '../state/AppStore'
-import type { CalgaryEvent, CategoryId, User } from '../types'
+import type { CategoryId, User } from '../types'
 
 const POPULAR: CategoryId[] = ['running', 'reading', 'hiking', 'music', 'food', 'volunteering', 'tech', 'games']
 
@@ -47,8 +46,6 @@ export default function LandingPage() {
   usePageTitle('')
   const { db, now, user } = useApp()
   const upcoming = useMemo(() => discoverableEvents(db, now).sort((a, b) => a.startsAt.localeCompare(b.startsAt)), [db, now])
-  const heroA = getEvent(db, 'evt-sunrise-run-next') ?? upcoming[0]
-  const heroB = getEvent(db, 'evt-book-club-next') ?? upcoming[1]
   const featured = upcoming.filter((e) => spotsLeft(db, e) > 0).slice(0, 6)
   const countBy = (c: CategoryId) => upcoming.filter((e) => e.categoryId === c).length
   const sampleTrip = useMemo(() => {
@@ -68,9 +65,6 @@ export default function LandingPage() {
       <section className="overflow-hidden border-b border-line bg-white">
         <Container className="grid grid-cols-1 items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:py-20">
           <div>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1 text-xs font-bold tracking-wide text-ink-soft uppercase">
-              <span className="size-2 rounded-full bg-brand" aria-hidden /> {BRAND.tagline}
-            </p>
             <h1 className="text-5xl leading-[1.02] font-extrabold tracking-[-0.035em] text-ink sm:text-6xl xl:text-7xl">
               Find your people. <span className="text-brand">Find your Calgary.</span>
             </h1>
@@ -89,7 +83,7 @@ export default function LandingPage() {
               <li className="flex items-center gap-1.5"><MapPin aria-hidden className="size-4 text-brand" /> All four quadrants</li>
             </ul>
           </div>
-          <HeroScene a={heroA} b={heroB} />
+          <HeroScene />
         </Container>
       </section>
 
@@ -336,9 +330,8 @@ function SectionTitle({ id, eyebrow, title, lead, left, className }: { id: strin
 }
 
 /** Calgary illustration: Rockies, the skyline and Calgary Tower, the Bow River — and a tandem riding the pathway. */
-function HeroScene({ a, b }: { a?: CalgaryEvent; b?: CalgaryEvent }) {
-  const { db, now } = useApp()
-  const pins: Array<{ x: number; y: number; Icon: typeof Bike; label: string }> = [
+function HeroScene() {
+  const pins: Array<{ x: number; y: number; Icon: typeof Mountain; label: string }> = [
     { x: 118, y: 150, Icon: Mountain, label: 'Hiking' },
     { x: 470, y: 128, Icon: Camera, label: 'Photography' },
     { x: 214, y: 236, Icon: Coffee, label: 'Coffee' },
@@ -374,29 +367,6 @@ function HeroScene({ a, b }: { a?: CalgaryEvent; b?: CalgaryEvent }) {
           </g>
         ))}
       </svg>
-      {a && <FloatingCard event={a} className="absolute -top-4 -left-2 sm:-left-8" going={registeredCount(db, a)} now={now} />}
-      {b && <FloatingCard event={b} className="absolute -right-2 -bottom-6 sm:-right-6" going={registeredCount(db, b)} now={now} />}
     </div>
-  )
-}
-
-function FloatingCard({ event, className, going, now }: { event: CalgaryEvent; className: string; going: number; now: Date }) {
-  return (
-    <Link
-      to={`/events/${event.id}`}
-      className={`${className} flex w-[min(17rem,70vw)] items-center gap-3 rounded-2xl border border-line bg-white/95 p-3 shadow-lift backdrop-blur transition-transform hover:-translate-y-0.5`}
-    >
-      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-tint text-brand-deep">
-        <CategoryIcon id={event.categoryId} className="size-5" />
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-bold text-ink">{event.title}</span>
-        <span className="block text-xs text-muted">{formatEventWhen(event.startsAt, now)}</span>
-        <span className="mt-1 flex gap-1">
-          <Badge tone={event.price === 0 ? 'success' : 'neutral'}>{formatPrice(event.price)}</Badge>
-          <Badge tone="outline">{going} going</Badge>
-        </span>
-      </span>
-    </Link>
   )
 }

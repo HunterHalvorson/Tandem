@@ -5,7 +5,6 @@
  */
 export const BRAND = {
   name: 'Tandem',
-  tagline: 'Better Together. Calgary Connected.',
   heroHeadline: 'Find your people. Find your Calgary.',
   heroSubheading:
     'From sunrise runs to late-night movie clubs, discover real experiences and meaningful connections with people who share your interests.',

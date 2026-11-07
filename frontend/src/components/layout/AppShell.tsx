@@ -494,7 +494,6 @@ function Footer() {
       <div className="mx-auto grid grid-cols-1 max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
         <div>
           <Logo />
-          <p className="mt-3 max-w-xs text-sm text-muted">{BRAND.tagline} A group-first way to find people to do things with in Calgary.</p>
         </div>
         <div>
           <h2 className="mb-3 text-sm font-bold text-ink">Explore</h2>
