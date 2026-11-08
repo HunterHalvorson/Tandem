@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tandem Devpost demo</title>
+<style>
+@font-face { font-family: 'InterV'; src: url('/frontend/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: block; }
+:root {
+  --brand: #c8102e; --brand-deep: #9b1026; --tint: #fbeaed; --soft: #f3c7cf;
+  --ink: #202124; --ink-soft: #3c4043; --muted: #5f6368; --paper: #fafaf8; --mist: #f3f4f6;
+  --line: #e5e7eb; --line-strong: #d1d5db; --success: #1e6b3a; --success-tint: #e7f3eb;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); font-family: 'InterV', system-ui, sans-serif; color: var(--ink); font-feature-settings: 'cv11', 'ss01'; -webkit-font-smoothing: antialiased; }
+svg.i { display: inline-block; flex-shrink: 0; }
+
+/* background */
+.blob { position: absolute; border-radius: 50%; filter: blur(10px); }
+#skyline { position: absolute; left: 1380px; bottom: 0; opacity: .55; }
+#bigsky { position: absolute; left: 312px; bottom: 0; }
+#bigsky .b { transform-box: fill-box; transform-origin: 50% 100%; }
+
+/* top bar */
+#topbar { position: absolute; left: 64px; top: 34px; right: 64px; height: 60px; display: flex; align-items: center; }
+#brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 30px; letter-spacing: -0.02em; }
+#pills { margin-left: auto; display: flex; gap: 8px; }
+.pill { height: 40px; padding: 0 16px; border-radius: 999px; display: flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 600; border: 1.5px solid var(--line); background: #fff; color: var(--muted); white-space: nowrap; }
+
+/* browser */
+#browser { position: absolute; left: 64px; top: 128px; width: 1328px; height: 876px; border-radius: 18px; background: #fff; box-shadow: 0 1px 2px rgb(16 24 40 / .06), 0 30px 70px -30px rgb(16 24 40 / .35), 0 0 0 1px rgb(16 24 40 / .06); overflow: hidden; transform-origin: 0 0; }
+#chrome { position: absolute; left: 0; top: 0; right: 0; height: 46px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 18px; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--line-strong); }
+#url { margin-left: 18px; height: 30px; min-width: 520px; padding: 0 14px; border-radius: 999px; background: var(--mist); display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+#url b { color: var(--ink-soft); font-weight: 500; }
+#vp { position: absolute; left: 0; top: 46px; width: 1328px; height: 830px; overflow: hidden; background: var(--paper); }
+#cam { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; transform-origin: 0 0; }
+.shot { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; overflow: hidden; transform-origin: 0 0; background: var(--paper); }
+.page { position: absolute; left: 0; top: 0; width: 1280px; }
+.page > img { display: block; width: 1280px; }
+.patch { position: absolute; left: 0; top: 0; width: 1280px; background-repeat: no-repeat; }
+.hdr { position: absolute; left: 0; top: 0; width: 1280px; background-repeat: no-repeat; box-shadow: 0 6px 16px -10px rgb(16 24 40 / .35); }
+.typing { position: absolute; background: #fff; display: flex; align-items: center; font-size: 16px; color: var(--ink); white-space: pre; overflow: hidden; }
+.caret { display: inline-block; width: 2px; height: 20px; background: var(--ink); margin-left: 1px; }
+#ov { position: absolute; left: 0; top: 0; width: 1328px; height: 830px; pointer-events: none; }
+.ring { position: absolute; border: 3px solid var(--brand); border-radius: 14px; box-shadow: 0 0 0 6px rgb(200 16 46 / .16), 0 10px 30px -8px rgb(200 16 46 / .35); }
+.rlabel { position: absolute; background: var(--brand); color: #fff; font-size: 18px; font-weight: 650; padding: 8px 15px; border-radius: 999px; white-space: nowrap; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 24px -10px rgb(155 16 38 / .7); }
+#cursor { position: absolute; left: 0; top: 0; width: 30px; height: 30px; filter: drop-shadow(0 3px 4px rgb(0 0 0 / .3)); }
+.ripple { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; border: 3px solid var(--brand); background: rgb(200 16 46 / .12); }
+.mode { position: absolute; left: 50%; bottom: 34px; height: 54px; padding: 0 24px 0 18px; border-radius: 999px; background: var(--ink); color: #fff; display: flex; align-items: center; gap: 11px; font-size: 21px; font-weight: 600; white-space: nowrap; box-shadow: 0 16px 40px -12px rgb(0 0 0 / .45); }
+.mode svg { color: #ffb3c0; }
+#waves { position: absolute; width: 60px; height: 60px; }
+
+/* side panel */
+#panel { position: absolute; left: 1448px; top: 128px; width: 408px; height: 876px; }
+.pb { position: absolute; left: 0; top: 6px; width: 408px; }
+.eyebrow { font-size: 15px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: 10px; }
+.pb h2 { margin: 0; font-size: 42px; line-height: 1.08; font-weight: 800; letter-spacing: -0.025em; text-wrap: balance; }
+.pb .sub { margin: 12px 0 0; font-size: 21px; line-height: 1.35; color: var(--muted); }
+.th { margin: 28px 0 12px; font-size: 13px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.chips { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; }
+.chips.wrap { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 9px; padding: 9px 15px 9px 12px; border-radius: 999px; background: #fff; border: 1.5px solid var(--line); font-size: 17px; font-weight: 600; color: var(--ink); box-shadow: 0 1px 2px rgb(16 24 40 / .05); white-space: nowrap; }
+.chip svg { color: var(--brand); }
+.chip.aud { background: var(--tint); border-color: var(--soft); color: var(--brand-deep); }
+.chip.sm { font-size: 15px; padding: 7px 12px 7px 10px; gap: 7px; }
+#persona { position: absolute; left: 0; bottom: 0; width: 408px; padding: 18px 20px; border-radius: 20px; background: #fff; border: 1.5px solid var(--line); box-shadow: 0 12px 32px -14px rgb(16 24 40 / .28); }
+#persona .who { display: flex; align-items: center; gap: 14px; }
+#persona .av { width: 52px; height: 52px; border-radius: 50%; background: #b8285c; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 19px; }
+#persona .nm { font-size: 22px; font-weight: 750; }
+#persona .ds { font-size: 16px; color: var(--muted); margin-top: 2px; }
+#persona .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+#persona .tag { font-size: 14.5px; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: var(--mist); color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+#persona .tag svg { color: var(--brand); }
+
+/* two devices + the sync server */
+#phone { position: absolute; left: 1481px; top: 174px; width: 375px; height: 784px; border-radius: 52px; background: #202124; box-shadow: 0 30px 70px -30px rgb(16 24 40 / .55), 0 0 0 1px rgb(16 24 40 / .25); }
+#pscreen { position: absolute; left: 12px; top: 12px; width: 351px; height: 760px; border-radius: 40px; overflow: hidden; background: #fff; }
+#pscreen img { position: absolute; left: 0; top: 0; width: 351px; height: 760px; }
+#pov { position: absolute; left: 12px; top: 12px; width: 351px; height: 760px; pointer-events: none; }
+#pov .ring { border-radius: 16px; }
+#pov .rlabel { font-size: 15px; padding: 6px 12px; gap: 6px; }
+#pov .tap { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgb(32 33 36 / .22); border: 2px solid rgb(32 33 36 / .35); }
+#wires { position: absolute; left: 0; top: 0; pointer-events: none; }
+#node { position: absolute; left: 1303px; top: 566px; width: 188px; padding: 16px 12px 14px; border-radius: 20px; background: #fff; border: 1.5px solid var(--line); box-shadow: 0 16px 40px -18px rgb(16 24 40 / .45); text-align: center; transform-origin: 50% 50%; }
+#node .nic { width: 50px; height: 50px; margin: 0 auto 8px; border-radius: 14px; display: grid; place-items: center; background: var(--tint); color: var(--brand); }
+#node .nt { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+#node .ns { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+#node .nst { margin-top: 10px; display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+#node .ndot { width: 9px; height: 9px; border-radius: 50%; }
+.pkt { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 6px rgb(200 16 46 / .18), 0 0 18px rgb(200 16 46 / .6); }
+.devlabel { position: absolute; display: inline-flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; transform: translateX(-50%); }
+.devlabel svg { color: var(--brand); }
+#latency { position: absolute; left: 1303px; top: 428px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 650; white-space: nowrap; }
+#latency svg { color: #ffb3c0; }
+
+/* slides */
+.slide { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.w { display: inline-block; white-space: pre; }
+#hook-head { position: absolute; left: 0; top: 292px; width: 1920px; text-align: center; transform-origin: 50% 0; }
+.hl { font-size: 84px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; }
+.hl.red { color: var(--brand); }
+#stats { position: absolute; left: 0; top: 352px; width: 1920px; display: flex; justify-content: center; gap: 36px; }
+.stat { width: 500px; padding: 30px 32px 28px; border-radius: 26px; background: #fff; border: 1.5px solid var(--line); box-shadow: 0 22px 60px -30px rgb(16 24 40 / .4); }
+.stat .ic { width: 58px; height: 58px; border-radius: 16px; background: var(--tint); color: var(--brand); display: grid; place-items: center; }
+.stat .num { margin-top: 20px; font-size: 96px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--brand); font-variant-numeric: tabular-nums; }
+.stat .lbl { margin-top: 14px; font-size: 25px; line-height: 1.3; font-weight: 650; color: var(--ink); }
+.stat .src { margin-top: 16px; font-size: 15.5px; color: var(--muted); }
+#hero { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 60px; font-weight: 800; font-size: 150px; letter-spacing: -0.02em; line-height: 1; white-space: nowrap; transform-origin: 0 0; }
+#intro-tag { position: absolute; left: 0; top: 520px; width: 1920px; text-align: center; font-size: 40px; font-weight: 500; color: var(--muted); letter-spacing: -0.01em; }
+#principles { position: absolute; left: 0; top: 628px; width: 1920px; display: flex; justify-content: center; gap: 22px; }
+.pr { display: inline-flex; align-items: center; gap: 14px; padding: 18px 30px 18px 22px; border-radius: 999px; background: #fff; border: 1.5px solid var(--line); font-size: 28px; font-weight: 700; box-shadow: 0 14px 34px -20px rgb(16 24 40 / .4); white-space: nowrap; }
+.pr svg { color: var(--brand); }
+
+/* how it's built */
+#s-stack .hd { position: absolute; left: 120px; top: 92px; }
+.eyebrow2 { font-size: 18px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; color: var(--brand); }
+#s-stack h1 { margin: 10px 0 0; font-size: 60px; font-weight: 800; letter-spacing: -0.03em; }
+.card { position: absolute; background: #fff; border: 1.5px solid var(--line); border-radius: 24px; box-shadow: 0 22px 60px -32px rgb(16 24 40 / .4); padding: 24px 26px 26px; }
+.card .ch { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 800; letter-spacing: -0.015em; }
+.card .ic { width: 50px; height: 50px; border-radius: 14px; background: var(--tint); color: var(--brand); display: grid; place-items: center; flex-shrink: 0; }
+.card .cs { margin: 10px 0 0; font-size: 19px; color: var(--muted); }
+.row { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 16px; border-radius: 14px; background: var(--mist); font-size: 19px; font-weight: 600; color: var(--ink-soft); border: 1.5px solid transparent; white-space: nowrap; }
+.row svg { color: var(--brand); }
+#proof { position: absolute; left: 0; top: 884px; width: 1920px; display: flex; justify-content: center; gap: 16px; }
+.pf { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px 14px 18px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 22px; font-weight: 650; white-space: nowrap; }
+.pf svg { color: #ffb3c0; }
+.spk { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 5px rgb(200 16 46 / .16), 0 0 14px rgb(200 16 46 / .5); }
+
+/* close */
+#close-lock { position: absolute; left: 0; top: 228px; width: 1920px; display: flex; justify-content: center; }
+#close-lock .in { display: flex; align-items: center; gap: 44px; font-size: 120px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.cl { position: absolute; left: 0; width: 1920px; text-align: center; font-size: 56px; font-weight: 750; letter-spacing: -0.025em; }
+#cl1 { top: 488px; }
+#cl2 { top: 568px; color: var(--brand); }
+#team { position: absolute; left: 0; top: 676px; width: 1920px; text-align: center; font-size: 26px; font-weight: 600; color: var(--muted); }
+#team b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob" style="left:1380px;top:-260px;width:760px;height:620px;background:radial-gradient(closest-side, #fbeaed, rgba(251,234,237,0));"></div>
+  <div class="blob" style="left:-260px;top:760px;width:700px;height:520px;background:radial-gradient(closest-side, #fdf1f3, rgba(253,241,243,0));"></div>
+  <svg id="skyline" width="540" height="150" viewBox="0 0 540 150" aria-hidden="true"><g fill="#f3c7cf" class="sky"></g></svg>
+  <svg id="bigsky" width="1296" height="360" viewBox="0 0 540 150" aria-hidden="true"><g fill="#f3c7cf" class="sky"></g></svg>
+
+  <div id="topbar">
+    <div id="brand"><span id="logo"></span>Tandem</div>
+    <div id="pills"></div>
+  </div>
+
+  <div id="browser">
+    <div id="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div id="url"></div></div>
+    <div id="vp"><div id="cam"></div><div id="ov"></div></div>
+  </div>
+
+  <div id="panel">
+    <div id="persona">
+      <div class="who"><div class="av">RM</div><div><div class="nm">Riley</div><div class="ds">Visiting Calgary for 10 days</div></div></div>
+      <div class="tags" id="ptags"></div>
+    </div>
+  </div>
+
+  <svg id="wires" width="1920" height="1080"><line id="w1" x1="1126" y1="566" x2="1209" y2="566"/><line id="w2" x1="1397" y1="566" x2="1481" y2="566"/></svg>
+  <div id="node"><div class="nic" id="nic"></div><div class="nt">Tandem Live</div><div class="ns">Node.js · Server-Sent Events</div><div class="nst" id="nst"><span class="ndot" id="ndot"></span><span id="ntext"></span></div></div>
+  <div id="latency"></div>
+  <div id="phone"><div id="pscreen"></div><div id="pov"></div></div>
+  <div class="devlabel" id="lab-laptop" style="left:595px;top:934px"></div>
+  <div class="devlabel" id="lab-phone" style="left:1668px;top:976px"></div>
+  <div id="pkts"></div>
+
+  <div class="slide" id="s-hook">
+    <div id="hook-head"><div class="hl" id="hl1"></div><div class="hl red" id="hl2"></div></div>
+    <div id="stats"></div>
+  </div>
+  <div class="slide" id="s-intro">
+    <div id="intro-tag">Find your people. Find your Calgary.</div>
+    <div id="principles"></div>
+  </div>
+  <div id="hero"><span id="hero-logo"></span><span>Tandem</span></div>
+  <div class="slide" id="s-stack">
+    <div class="hd"><div class="eyebrow2">How it’s built</div><h1>Simple to run. Ready to scale.</h1></div>
+    <svg id="stack-wires" width="1920" height="1080" style="position:absolute;left:0;top:0"></svg>
+    <div class="card" id="cA" style="left:120px;top:282px;width:720px"></div>
+    <div class="card" id="cB" style="left:892px;top:400px;width:326px"></div>
+    <div class="card" id="cB2" style="left:892px;top:650px;width:326px"></div>
+    <div class="card" id="cC1" style="left:1270px;top:282px;width:530px"></div>
+    <div class="card" id="cC2" style="left:1270px;top:570px;width:530px"></div>
+    <div id="spk"></div>
+    <div id="proof"></div>
+  </div>
+  <div class="slide" id="s-close">
+    <div id="close-lock"><div class="in"><span id="close-logo"></span><span>Tandem</span></div></div>
+    <div class="cl" id="cl1"></div>
+    <div class="cl" id="cl2"></div>
+    <div id="team"><b>LeGroup</b> · Falah Sheikh · Hunter Halvorson</div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="submission-script.js"></script>
+<script>
+/* ============================================================== helpers */
+const S = 1328 / 1280, VW = 1280, VH = 800
+const clamp01 = (x) => Math.max(0, Math.min(1, x))
+const ramp = (t, a, b) => (b <= a ? (t >= a ? 1 : 0) : clamp01((t - a) / (b - a)))
+const lerp = (a, b, k) => a + (b - a) * k
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
+const easeOut = (x) => 1 - Math.pow(1 - x, 3)
+const backOut = (x) => { const c1 = 1.6, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2) }
+function track(frames, t, fn = ease) {
+  if (t <= frames[0][0]) return frames[0][1]
+  for (let i = 1; i < frames.length; i++) {
+    if (t <= frames[i][0]) {
+      const [t0, v0] = frames[i - 1], [t1, v1] = frames[i]
+      const k = fn(ramp(t, t0, t1))
+      return Array.isArray(v0) ? v0.map((x, j) => lerp(x, v1[j], k)) : lerp(v0, v1, k)
+    }
+  }
+  return frames[frames.length - 1][1]
+}
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
+const icon = (name, size = 20, sw = 2) => `<svg class="i" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] ?? ''}</svg>`
+const H = (name) => SHOT_META[name].h
+const $ = (id) => document.getElementById(id)
+const show = (e, on) => { e.style.display = on ? '' : 'none' }
+/** Fade + rise for an element entering at t0 (and optionally leaving at t1). */
+function enter(e, t, t0, { dur = 0.45, dy = 24, t1 = Infinity, out = 0.4 } = {}) {
+  const k = easeOut(ramp(t, t0, t0 + dur)) * (1 - ease(ramp(t, t1, t1 + out)))
+  e.style.opacity = k
+  e.style.transform = `translateY(${lerp(dy, 0, easeOut(ramp(t, t0, t0 + dur)))}px)`
+  return k
+}
+
+/* ============================================================== scenes (lengths come from the script) */
+const SCRIPT = window.SUBMISSION_SCRIPT
+const SC = {}
+{ let acc = 0; for (const s of SCRIPT.scenes) { SC[s.id] = { start: acc, dur: s.dur, end: acc + s.dur }; acc += s.dur } }
+const at = (id, x) => SC[id].start + x
+const DURATION = SC.close.end
+
+/* The sign-up → map and rating / display sections reuse the 60 s cut's timeline (demo.html, 40 s base).
+   ANCH maps those old times onto this cut: actions keep their speed, holds stretch to fit the voice-over. */
+const seg = (id, pairs) => pairs.map(([o, n]) => [o, at(id, n)])
+const ANCH = [
+  ...seg('signup', [[0, 0], [0.35, 5.2], [0.95, 6.6], [1.75, 9.3], [2.22, 9.85], [2.36, 10.0], [3.05, 12.0], [3.38, 12.45]]),
+  ...seg('comfort', [[3.5, 0], [3.72, 0.3], [3.8, 0.4], [3.99, 0.65], [4.74, 1.85], [4.85, 2.0], [5.3, 2.5], [5.62, 2.85], [5.72, 3.0], [5.85, 3.15], [5.95, 3.3], [6.25, 3.6], [6.3, 3.65], [6.95, 4.6], [7.3, 5.0], [7.34, 5.05], [7.94, 6.2], [8.05, 6.35], [8.95, 8.6], [9.4, 9.2], [9.48, 9.35], [9.57, 9.6], [9.65, 9.7], [10.1, 10.3], [10.55, 14.3]]),
+  ...seg('search', [[10.6, 0], [10.9, 0.4], [11.2, 0.85], [11.24, 0.9], [11.26, 0.92], [11.32, 1.0], [12.12, 2.4], [12.3, 4.6], [12.52, 5.0], [12.57, 5.05], [12.62, 5.15], [12.85, 5.6], [13.05, 5.8], [13.9, 8.3], [13.95, 8.4], [14.2, 8.9], [15.3, 12.4], [15.35, 12.5], [15.7, 13.0], [15.75, 13.1], [15.85, 13.2], [16.85, 16.4]]),
+  ...seg('map', [[16.95, 0], [17.2, 0.3], [17.3, 0.4], [18.3, 2.6], [18.35, 2.7], [18.45, 2.8], [18.77, 3.15], [18.8, 3.2], [18.95, 3.35], [19.4, 6.3], [19.8, 6.9], [19.85, 7.0], [19.88, 7.05], [20.2, 7.5], [20.3, 7.6], [21.25, 11.7]]),
+  [21.35, at('event', 0)],
+  ...seg('after', [[31.95, 7.8], [32.25, 8.2], [32.35, 8.3], [32.75, 8.9], [32.8, 9.0], [32.83, 9.03], [32.95, 9.2], [33.05, 9.3], [33.5, 10.0], [34.25, 11.5]]),
+  ...seg('access', [[34.5, 0], [34.8, 0.4], [35.2, 3.5], [35.26, 3.6], [35.3, 3.65], [35.68, 4.5], [35.76, 4.7], [35.8, 4.75], [35.84, 4.8], [36.6, 6.7], [36.7, 6.9], [36.73, 6.95], [36.76, 7.0], [37.55, 8.9], [37.64, 9.1], [37.67, 9.15], [37.7, 9.2], [38.1, 10.9], [38.15, 11.0], [38.18, 11.05], [38.25, 11.2], [38.45, 11.5], [38.5, 11.7], [40, 15.8]]),
+]
+function W(t) {
+  if (t <= ANCH[0][0]) return ANCH[0][1] + (t - ANCH[0][0])
+  for (let i = 1; i < ANCH.length; i++) {
+    if (t <= ANCH[i][0]) { const [a0, b0] = ANCH[i - 1], [a1, b1] = ANCH[i]; return b0 + ((t - a0) * (b1 - b0)) / (a1 - a0) }
+  }
+  const [a, b] = ANCH[ANCH.length - 1]
+  return b + (t - a)
+}
+
+/* ============================================================== app screens (page coordinates = CSS px of 1280x800 captures) */
+const EVT = '/events/evt-coffee-newcomers'
+const M1 = 'Hi! Visiting from Vancouver and a little nervous. Is it OK if I mostly listen at first?'
+const M3 = 'Running 5 minutes late, see you soon!'
+const OLD_SHOTS = [
+  { id: 'signup', img: 'signup-0', in: 0, fd: 0, url: '/signup', scroll: [[0, 0], [1.75, 0], [2.2, 520]],
+    patches: [{ img: 'signup', kind: 'fade', rect: [404, 726, 472, 234], at: 2.32, dur: 0.2 }] },
+  { id: 'onb', img: 'onboarding-0', in: 3.5, fd: 0.25, url: '/onboarding', scroll: [[0, 0]],
+    patches: [
+      { img: 'onboarding', kind: 'circle', c: [394, 448], r: 17, at: 4.05, dur: 0.18 },
+      { img: 'onboarding', kind: 'circle', c: [654, 418], r: 17, at: 4.27, dur: 0.18 },
+      { img: 'onboarding', kind: 'circle', c: [394, 538], r: 17, at: 4.49, dur: 0.18 },
+      { img: 'onboarding', kind: 'circle', c: [654, 628], r: 17, at: 4.71, dur: 0.18 },
+      { img: 'onboarding', kind: 'fade', rect: [384, 322, 512, 44], at: 4.73, dur: 0.18 },
+    ] },
+  { id: 'set', img: 'settings-0', in: 5.95, fd: 0.25, url: '/settings#comfort', scroll: [[5.95, 697], [8.95, 697], [9.4, 1350]],
+    patches: [
+      { img: 'settings', kind: 'circle', c: [319, 984], r: 17, at: 7.36, dur: 0.18 },
+      { img: 'settings', kind: 'circle', c: [780, 984], r: 17, at: 7.56, dur: 0.18 },
+      { img: 'settings', kind: 'fade', rect: [307, 1328, 918, 66], at: 7.76, dur: 0.18 },
+      { img: 'settings', kind: 'fade', rect: [307, 1398, 918, 66], at: 7.96, dur: 0.18 },
+      { img: 'settings', kind: 'fade', rect: [307, 1908, 918, 80], at: 9.6, dur: 0.2 },
+    ] },
+  { id: 'd0', img: 'discover-0', in: 10.6, fd: 0.25, url: '/discover', scroll: [[0, 0]],
+    typing: { rect: [73, 170, 1020, 36], x: 74, text: 'quiet small group for visitors', from: 11.32, to: 12.12, caret: [11.26, 12.62], size: 16 } },
+  { id: 'd1', img: 'discover', in: 12.62, fd: 0.16, url: '/discover?size=small&access=quiet&travel=1', scroll: [[12.62, 0], [13.95, 0], [14.2, 150], [15.35, 150], [15.7, 420]] },
+  { id: 'm0', img: 'map-0', in: 16.95, fd: 0.25, url: '/map', scroll: [[0, 0]], xf: [[18.35, 1, 893, 318], [18.77, 1.7, 893, 318]] },
+  { id: 'm1', img: 'map-1', in: 18.45, fd: 0.3, url: '/map?access=quiet', scroll: [[0, 0]], xf: [[18.45, 0.62, 820, 454], [18.8, 1, 820, 454]],
+    patches: [{ img: 'map', kind: 'pop', rect: [668, 82, 304, 360], origin: [820, 440], at: 19.88, dur: 0.26 }] },
+  { id: 'rate', img: 'rate-0', in: 31.95, fd: 0.25, url: '/events/evt-book-club-past', scroll: [[0, 2064]],
+    patches: [{ img: 'rate', kind: 'wipe', rect: [48, 2449, 520, 48], at: 32.83, dur: 0.32 }, { img: 'rate', kind: 'fade', rect: [50, 2565, 140, 52], at: 32.95, dur: 0.2 }] },
+  { id: 'a0', img: 'a11y-0', in: 34.5, fd: 0.25, url: EVT, scroll: [[0, 0]] },
+  { id: 'a0m', img: 'a11y-0m', in: 35.3, fd: 0.16, url: EVT, scroll: [[0, 0]] },
+  { id: 'a1m', img: 'a11y-1m', in: 35.8, fd: 0.24, url: EVT, scroll: [[0, 0]] },
+  { id: 'a2m', img: 'a11y-2m', in: 36.73, fd: 0.24, url: EVT, scroll: [[0, 0]] },
+  { id: 'a3m', img: 'a11y-3m', in: 37.67, fd: 0.24, url: EVT, scroll: [[0, 0]] },
+  { id: 'a3', img: 'a11y-3', in: 38.18, fd: 0.2, url: EVT, scroll: [[0, 0]] },
+]
+const conv = (s) => ({
+  ...s, in: W(s.in), scroll: s.scroll.length > 1 ? s.scroll.map(([t, y]) => [W(t), y]) : s.scroll,
+  xf: s.xf?.map(([t, ...v]) => [W(t), ...v]), patches: s.patches?.map((p) => ({ ...p, at: W(p.at) })),
+  typing: s.typing && { ...s.typing, from: W(s.typing.from), to: W(s.typing.to), caret: s.typing.caret.map(W) },
+})
+const SHOTS = [
+  ...OLD_SHOTS.map(conv).map((s) => (s.id === 'signup' ? { ...s, in: at('intro', 10.4) } : s)), // on screen while the frame rises in
+  { id: 'ew', img: 'event-why', in: at('event', 0), fd: 0.25, url: EVT, scroll: [[at('event', 0.6), 0], [at('event', 1.3), 700], [at('event', 9.2), 700], [at('event', 9.8), 0]],
+    patches: [{ img: 'event', kind: 'fade', rect: [868, 118, 412, 682], at: at('event', 10.45), dur: 0.22 }] },
+  { id: 'e1', img: 'event', in: at('event', 12.8), fd: 0.18, url: EVT, scroll: [[at('event', 13.0), 0], [at('event', 13.5), 984], [at('event', 16.8), 984], [at('event', 17.3), 1324]] },
+  { id: 'k0', img: 'chat2-0', in: at('chat', 0), fd: 0.3, url: EVT + '/chat', scroll: [[0, 0]],
+    typing: { rect: [47, 682, 744, 40], x: 59, text: M1, from: at('chat', 1.9), to: at('chat', 3.7), caret: [at('chat', 1.8), at('chat', 4.1)], size: 16 } },
+  { id: 'k1', img: 'chat2-1', in: at('chat', 4.1), fd: 0.14, url: EVT + '/chat', scroll: [[0, 0]] },
+  { id: 'k2', img: 'chat2-2', in: at('chat', 6.7), fd: 0.2, url: EVT + '/chat', scroll: [[0, 0]] },
+  { id: 'k3', img: 'chat2-off-0', in: at('offline', 0.6), fd: 0.25, url: EVT + '/chat', scroll: [[0, 0]],
+    typing: { rect: [47, 682, 744, 40], x: 59, text: M3, from: at('offline', 2.95), to: at('offline', 3.75), caret: [at('offline', 2.85), at('offline', 4.0)], size: 16 } },
+  { id: 'k4', img: 'chat2-off-1', in: at('offline', 4.0), fd: 0.14, url: EVT + '/chat', scroll: [[0, 0]] },
+  { id: 'k5', img: 'chat2-on', in: at('offline', 6.0), fd: 0.2, url: EVT + '/chat', scroll: [[0, 0]] },
+  { id: 't0', img: 'traveller-0', in: at('plan', 0.2), fd: 0.3, url: '/explore-like-a-local', scroll: [[at('plan', 1.2), 0], [at('plan', 1.7), 330]] },
+  { id: 't1', img: 'traveller-1', in: at('plan', 6.95), fd: 0.2, url: '/explore-like-a-local', scroll: [[0, 330]] },
+  { id: 'h0', img: 'dashboard-0', in: at('after', 0), fd: 0.25, url: '/dashboard', scroll: [[0, 0]] },
+  { id: 'h1', img: 'dashboard-1', in: at('after', 2.15), fd: 0.15, url: '/dashboard', scroll: [[0, 0]] },
+  { id: 'l3', img: 'leaderboard3', in: at('after', 11.8), fd: 0.25, url: '/leaderboard', scroll: [[at('after', 11.8), 330], [at('after', 16.6), 330], [at('after', 17.2), 1050]] },
+  { id: 'p0', img: 'settings-priv', in: at('privacy', 0), fd: 0.25, url: '/settings#privacy', scroll: [[at('privacy', 4.4), 0], [at('privacy', 5.1), 2780]] },
+].sort((a, b) => a.in - b.in)
+
+// Camera: [t, zoom, centerX, centerY] in viewport coordinates.
+const OLD_CAM = [[0.35, 1, 640, 400], [0.95, 1.22, 650, 400], [3.5, 1.22, 650, 400], [3.8, 1.3, 640, 470], [5.95, 1.3, 640, 470], [6.25, 1.05, 660, 400], [10.6, 1.05, 660, 400],
+  [10.9, 1.06, 652, 378], [12.62, 1.06, 652, 378], [13.05, 1, 640, 400], [15.35, 1, 640, 400], [15.75, 1.45, 580, 490], [16.95, 1.45, 580, 490], [17.2, 1, 640, 400]]
+const CAM = [
+  [0, 1, 640, 400], ...OLD_CAM.map(([t, ...v]) => [W(t), ...v]),
+  [at('event', 0.6), 1, 640, 400], [at('event', 1.3), 1.12, 450, 420], [at('event', 9.2), 1.12, 450, 420], [at('event', 9.8), 1, 640, 400],
+  [at('event', 16.8), 1, 640, 400], [at('event', 17.4), 1.18, 542, 339], [at('event', 20.8), 1.18, 542, 339], [at('chat', 0.3), 1, 640, 400],
+  [at('after', 7.8), 1, 640, 400], [at('after', 8.2), 1.3, 500, 430], [at('after', 11.6), 1.3, 500, 430], [at('after', 12.0), 1, 640, 400],
+  [9999, 1, 640, 400],
+].sort((a, b) => a[0] - b[0])
+
+const OLD_RINGS = [
+  { shot: 'signup', rect: [440, 222, 400, 44], from: 0.8, to: 1.8, label: 'One-tap Google sign-in', icon: 'shield-check', pos: 'top' },
+  { shot: 'signup', rect: [409, 830, 227, 62], from: 2.36, to: 3.4, label: 'Visiting → Travel mode on', icon: 'plane', pos: 'left' },
+  { shot: 'onb', rect: [384, 364, 512, 278], from: 4.85, to: 5.85, label: 'Interests shape every pick', icon: 'sparkles', pos: 'bottom' },
+  { shot: 'set', rect: [309, 864, 914, 56], from: 6.3, to: 7.3, label: 'Private by default', icon: 'lock', pos: 'top' },
+  { shot: 'set', rect: [309, 1330, 914, 132], from: 8.05, to: 8.95, label: 'Quiet · sensory-friendly', icon: 'ear', pos: 'top' },
+  { shot: 'set', rect: [309, 1910, 914, 76], from: 9.65, to: 10.55, label: 'Ease Into It: low-pressure first', icon: 'heart-handshake', pos: 'top' },
+  { shot: 'd1', rect: [28, 219, 380, 28], from: 12.85, to: 13.9, label: 'Plain words → filters', icon: 'sparkles', pos: 'right' },
+  { shot: 'd1', rect: [49, 504, 266, 405], from: 14.2, to: 15.3, label: 'Organizer-confirmed access only', icon: 'badge-check', pos: 'right' },
+  { shot: 'd1', rect: [376, 856, 408, 120], from: 15.85, to: 16.85, label: 'Why it matches', icon: 'sparkles', pos: 'top' },
+  { shot: 'm0', rect: [376, 82, 284, 42], from: 17.3, to: 18.3, label: 'Calgary quadrants', icon: 'map', pos: 'bottom' },
+  { shot: 'm1', rect: [232, 139, 110, 36], from: 18.95, to: 19.85, label: 'Same filters as the list', icon: 'sliders-horizontal', pos: 'right' },
+  { shot: 'm1', rect: [680, 89, 280, 337], from: 20.2, to: 21.25, label: 'Join from the map', icon: 'map-pin', pos: 'right' },
+  { shot: 'rate', rect: [46, 2446, 256, 54], from: 33.05, to: 34.25, label: 'Rate events, never people', icon: 'star', pos: 'right' },
+]
+const RINGS = [
+  ...OLD_RINGS.map((r) => ({ ...r, from: W(r.from), to: W(r.to) })),
+  { shot: 'a3', rect: [1118, 605, 96, 69], from: W(38.5), to: SC.access.end, label: 'Read aloud', icon: 'volume-2', pos: 'top', waves: true },
+  { shot: 'd0', rect: [1113, 168, 40, 40], from: at('search', 2.7), to: at('search', 4.6), label: 'Or just say it', icon: 'mic', pos: 'bottom' },
+  { shot: 'ew', rect: [32, 930, 824, 380], from: at('event', 1.6), to: at('event', 9.0), label: 'Rule-based · no tracking', icon: 'sparkles', pos: 'top' },
+  { shot: 'ew', rect: [888, 133, 360, 409], from: at('event', 10.7), to: at('event', 12.6), label: 'Going · chat unlocked', icon: 'check', pos: 'left' },
+  { shot: 'e1', rect: [32, 1074, 824, 334], from: at('event', 13.7), to: at('event', 16.6), label: 'First-Time Friendly', icon: 'heart-handshake', pos: 'right' },
+  { shot: 'e1', rect: [32, 1444, 824, 428], from: at('event', 17.5), to: at('event', 20.8), label: 'Never assumed: confirmed or not', icon: 'badge-check', pos: 'top' },
+  { shot: 'k2', rect: [93, 557, 584, 71], from: at('chat', 6.9), to: at('chat', 10.4), label: 'Reply from the host’s phone', icon: 'smartphone', pos: 'top' },
+  { shot: 'k3', rect: [741, 146, 150, 20], from: at('offline', 0.9), to: at('offline', 2.6), label: 'Offline, still working', icon: 'wifi-off', pos: 'bottom' },
+  { shot: 'k4', rect: [591, 608, 296, 44], from: at('offline', 4.2), to: at('offline', 5.9), label: 'Saved on this device', icon: 'save', pos: 'top' },
+  { shot: 'k5', rect: [764, 146, 127, 20], from: at('offline', 6.2), to: at('offline', 8.2), label: 'Back online', icon: 'radio', pos: 'bottom' },
+  { shot: 't0', rect: [404, 504, 844, 470], from: at('plan', 2.0), to: at('plan', 6.0), label: 'Planned around Riley', icon: 'sparkles', pos: 'left' },
+  { shot: 't1', rect: [404, 504, 844, 470], from: at('plan', 7.2), to: at('plan', 10.6), label: 'Joined in one tap', icon: 'check', pos: 'left' },
+  { shot: 'h0', rect: [32, 299, 602, 78], from: at('after', 0.5), to: at('after', 2.2), label: 'Did Riley make it?', icon: 'calendar-check', pos: 'bottom' },
+  { shot: 'h1', rect: [889, 410, 358, 144], from: at('after', 2.5), to: at('after', 7.6), label: 'Miles for showing up', icon: 'bike', pos: 'left' },
+  { shot: 'l3', rect: [69, 522, 1162, 40], from: at('after', 12.5), to: at('after', 16.4), label: 'Bayesian average', icon: 'trophy', pos: 'top' },
+  { shot: 'l3', rect: [32, 1422, 1216, 175], from: at('after', 17.4), to: at('after', 20.0), label: '“New” until 3 reviews', icon: 'sparkles', pos: 'top' },
+  { shot: 'p0', rect: [309, 294, 914, 416], from: at('privacy', 0.5), to: at('privacy', 4.2), label: 'You choose who sees what', icon: 'eye', pos: 'top' },
+  { shot: 'p0', rect: [309, 3312, 592, 44], from: at('privacy', 5.3), to: at('privacy', 7.6), label: 'Download or delete, any time', icon: 'lock', pos: 'top' },
+  { shot: 'p0', rect: [309, 3372, 914, 20], from: at('privacy', 7.8), to: at('privacy', 10.4), label: 'Never stored: passwords, IDs, medical info', icon: 'shield-check', pos: 'bottom' },
+]
+
+// Cursor segments: page coordinates of the given shot; clicks are ripple times.
+const OLD_CURSOR = [
+  { shot: 'signup', from: 0.4, to: 3.55, kf: [[0.4, 980, 640], [0.85, 640, 244], [1.75, 640, 244], [2.22, 522, 861], [3.05, 522, 861], [3.38, 640, 998]] },
+  { shot: 'onb', from: 3.72, to: 5.9, kf: [[3.72, 600, 760], [3.99, 394, 448], [4.06, 394, 448], [4.22, 654, 418], [4.28, 654, 418], [4.44, 394, 538], [4.5, 394, 538], [4.66, 654, 628], [4.74, 654, 628], [5.3, 654, 628], [5.62, 441, 697]] },
+  { shot: 'set', from: 6.95, to: 10.1, kf: [[6.95, 900, 1250], [7.3, 319, 984], [7.37, 319, 984], [7.5, 780, 984], [7.57, 780, 984], [7.7, 331, 1361], [7.77, 331, 1361], [7.9, 331, 1431], [7.97, 331, 1431], [8.95, 331, 1431], [9.48, 1182, 1943]] },
+  { shot: 'd0', from: 10.9, to: 12.66, kf: [[10.9, 820, 460], [11.2, 300, 188], [12.3, 300, 188], [12.52, 1200, 188]] },
+  { shot: 'm1', from: 19.4, to: 20.3, kf: [[19.4, 640, 620], [19.8, 820, 452]] },
+  { shot: 'rate', from: 32.35, to: 33.5, kf: [[32.35, 620, 2700], [32.75, 231, 2473]] },
+  { shot: 'a0', from: 34.8, to: 38.25, kf: [[34.8, 760, 420], [35.2, 1152, 32], [35.32, 1152, 32], [35.68, 1036, 202], [35.82, 1036, 202], [36.6, 1096, 502], [36.78, 1096, 502], [37.55, 1096, 360], [37.72, 1096, 360], [38.1, 420, 520]] },
+]
+const loc = (id, kf) => kf.map(([t, x, y]) => [at(id, t), x, y])
+const CURSOR = [
+  ...OLD_CURSOR.map((c) => ({ ...c, from: W(c.from), to: W(c.to), kf: c.kf.map(([t, x, y]) => [W(t), x, y]) })),
+  { shot: 'ew', from: at('event', 9.6), to: at('event', 10.9), kf: loc('event', [[9.6, 640, 560], [10.3, 1068, 296]]) },
+  { shot: 'k0', from: at('chat', 1.2), to: at('chat', 4.3), kf: loc('chat', [[1.2, 700, 420], [1.7, 300, 702], [3.7, 300, 702], [4.0, 847, 703]]) },
+  { shot: 'k3', from: at('offline', 2.3), to: at('offline', 4.25), kf: loc('offline', [[2.3, 700, 420], [2.8, 300, 702], [3.7, 300, 702], [3.95, 847, 703]]) },
+  { shot: 't0', from: at('plan', 6.2), to: at('plan', 7.4), kf: loc('plan', [[6.2, 700, 560], [6.8, 1201, 470]]) },
+  { shot: 'h0', from: at('after', 1.4), to: at('after', 2.6), kf: loc('after', [[1.4, 700, 560], [2.0, 577, 338]]) },
+]
+const CLICKS = [
+  ...[2.28, 3.45, 4.03, 4.25, 4.47, 4.69, 5.72, 7.34, 7.54, 7.74, 7.94, 9.57, 11.24, 12.57, 19.85, 32.8, 35.26, 35.76, 36.7, 37.64, 38.15].map(W),
+  at('event', 10.4), at('chat', 1.75), at('chat', 4.05), at('offline', 2.85), at('offline', 3.95), at('plan', 6.9), at('after', 2.1),
+]
+const MODES = [
+  { from: 35.84, to: 36.7, icon: 'a-large-small', text: 'Text size A++' },
+  { from: 36.76, to: 37.64, icon: 'type', text: 'Readable font · Atkinson Hyperlegible' },
+  { from: 37.7, to: 38.45, icon: 'contrast', text: 'High contrast' },
+].map((m) => ({ ...m, from: W(m.from), to: W(m.to) }))
+
+const STEPS = [
+  ['Sign up', 'signup', 'search'], ['Search', 'search', 'map'], ['Map', 'map', 'event'], ['Join', 'event', 'chat'], ['Chat', 'chat', 'plan'],
+  ['Plan', 'plan', 'after'], ['Rate', 'after', 'access'], ['Accessibility', 'access', 'privacy'], ['Privacy', 'privacy', 'stack'],
+].map(([label, a, b]) => ({ label, from: SC[a].start, to: SC[b].start }))
+
+const PANELS = [
+  { from: at('signup', 0.3), to: at('comfort', 0), title: 'Sign up in seconds', sub: 'Google or email', chips: [['shield-check', 'Google Identity Services'], ['lock', 'No passwords stored']] },
+  { from: at('comfort', 0.05), to: at('comfort', 3.3), title: 'Pick your interests', sub: 'Books, coffee, hikes, meetups', chips: [['sparkles', 'Explained recommendations']] },
+  { from: at('comfort', 3.35), to: at('search', 0), title: 'Comfort & Access', sub: 'Practical needs, private by default', chips: [['lock', 'Never medical labels'], ['heart-handshake', 'Ease Into It re-ranks events']] },
+  { from: at('search', 0.05), to: at('map', 0), title: 'Search like you talk', sub: 'Plus accessibility filters', chips: [['sparkles', 'Plain language → filters'], ['mic', 'Voice search · Web Speech API'], ['sliders-horizontal', 'Filters shared by list & map']] },
+  { from: at('map', 0.05), to: at('event', 0), title: 'Explore the map', sub: 'Every event across Calgary', chips: [['map', 'Leaflet + OpenStreetMap'], ['layers', 'Zoom-aware clustering'], ['map-pin', 'Private spots shown as areas']] },
+  { from: at('event', 0.05), to: at('chat', 0.3), title: 'Know before you go', sub: 'A transparent match, honest access info', chips: [['sparkles', 'Rule-based score · no tracking'], ['badge-check', 'Organizer-confirmed access'], ['calendar-check', 'Join · calendar · Tandem Miles']] },
+  { from: at('plan', 0.7), to: at('after', 0), title: 'Explore Like a Local', sub: 'For visitors and newcomers', chips: [['plane', 'Rule-based weekend planner'], ['heart-handshake', 'Uses comfort settings'], ['check', 'Join the whole plan in one tap']] },
+  { from: at('after', 0.05), to: at('access', 0), title: 'After the event', sub: 'Show up, then rate the event', chips: [['bike', 'Miles reward showing up'], ['star', 'Rate events, never people'], ['trophy', 'Fair (Bayesian) leaderboard']] },
+  { from: at('access', 0.05), to: at('privacy', 0), eyebrow: 'The bigger picture', title: 'Adapts to every Calgarian', sub: 'All ages, abilities and comfort levels',
+    aud: [['plane', 'Visitors & newcomers'], ['heart-handshake', 'Social anxiety'], ['users', 'Seniors'], ['eye', 'Low vision'], ['audio-lines', 'Screen readers'], ['accessibility', 'Wheelchair users'], ['ear', 'Sensory needs']] },
+  { from: at('privacy', 0.05), to: at('stack', 0.5), title: 'You stay in control', sub: 'Privacy and your data', chips: [['eye', 'Access needs private by default'], ['lock', 'Download or delete any time'], ['shield-check', 'No passwords, IDs or medical info']] },
+]
+
+/* ============================================================== two devices + Tandem Live */
+const PHONE = [
+  { img: 'phone-0', in: at('chat', 0), fd: 0 },
+  { img: 'phone-1', in: at('chat', 4.75), fd: 0.2 },
+  { img: 'phone-1t', in: at('chat', 5.3), fd: 0.2 },
+  { img: 'phone-2', in: at('chat', 6.05), fd: 0.2 },
+  { img: 'phone-3', in: at('offline', 6.8), fd: 0.2 },
+]
+const PS = 351 / 390 // phone CSS px → stage px
+const PRINGS = [
+  { img: 'phone-1', rect: [69, 475, 282, 95], from: at('chat', 4.9), to: at('chat', 6.0), label: 'Live on the host’s phone', icon: 'smartphone' },
+  { img: 'phone-3', rect: [69, 500, 282, 71], from: at('offline', 7.0), to: at('offline', 10.7), label: 'Delivered after reconnect', icon: 'check' },
+]
+const PTAPS = [{ x: 336, y: 644, t: at('chat', 6.0) }]
+const LX = 1126, NL = 1209, NR = 1397, PX = 1481, WY = 566
+const PACKETS = [
+  { t0: at('chat', 4.15), t1: at('chat', 4.45), x0: LX, x1: NL }, { t0: at('chat', 4.45), t1: at('chat', 4.75), x0: NR, x1: PX },
+  { t0: at('chat', 6.1), t1: at('chat', 6.4), x0: PX, x1: NR }, { t0: at('chat', 6.4), t1: at('chat', 6.7), x0: NL, x1: LX },
+  { t0: at('offline', 4.05), t1: at('offline', 4.3), x0: LX, x1: LX + 30, hold: at('offline', 6.2) },
+  { t0: at('offline', 6.2), t1: at('offline', 6.5), x0: LX + 30, x1: NL }, { t0: at('offline', 6.5), t1: at('offline', 6.8), x0: NR, x1: PX },
+]
+const PULSES = [at('chat', 4.45), at('chat', 6.4), at('offline', 5.6), at('offline', 6.5)]
+const OFFLINE = [at('offline', 0.2), at('offline', 5.6)]
+const dmAt = (t) => ease(ramp(t, at('chat', 0), at('chat', 1.0))) * (1 - ease(ramp(t, at('plan', 0), at('plan', 0.9))))
+
+/* ============================================================== build DOM */
+const SKY = `<rect x="0" y="96" width="38" height="54"/><rect x="42" y="70" width="30" height="80"/><rect x="76" y="84" width="40" height="66"/><path d="M124 150 V58 Q140 40 156 58 V150 Z"/><rect x="162" y="78" width="28" height="72"/><rect x="198" y="104" width="6" height="46"/><rect x="199.5" y="40" width="3" height="66"/><path d="M190 46 h22 l-3 -10 h-16 z"/><rect x="199" y="18" width="4" height="18"/><rect x="220" y="64" width="34" height="86"/><rect x="258" y="88" width="44" height="62"/><path d="M308 150 V50 L334 30 V150 Z"/><rect x="340" y="76" width="30" height="74"/><rect x="374" y="96" width="42" height="54"/><rect x="420" y="72" width="26" height="78"/><rect x="450" y="104" width="90" height="46"/>`
+document.querySelectorAll('.sky').forEach((g) => { g.innerHTML = SKY })
+const bigBuildings = [...$('bigsky').querySelectorAll('.sky > *')]
+bigBuildings.forEach((b) => b.classList.add('b'))
+$('logo').innerHTML = LOGO.replace('<svg ', '<svg width="64" height="40" ')
+$('hero-logo').innerHTML = LOGO.replace('<svg ', '<svg width="320" height="200" style="display:block" ')
+$('close-logo').innerHTML = LOGO.replace('<svg ', '<svg width="256" height="160" style="display:block" ')
+$('ptags').innerHTML = [['heart-handshake', 'Social anxiety'], ['ear', 'Prefers quiet, small groups']].map(([i, t]) => `<span class="tag">${icon(i, 15, 2.2)}${t}</span>`).join('')
+const pillEls = STEPS.map((s) => { const p = el('div', 'pill', `<span class="ck"></span>${s.label}`); $('pills').appendChild(p); return p })
+
+const cam = $('cam'), ov = $('ov')
+const shotById = {}
+const images = new Set()
+for (const s of SHOTS) {
+  const h = H(s.img)
+  s.h = h
+  s.el = el('div', 'shot')
+  s.page = el('div', 'page')
+  s.page.style.height = h + 'px'
+  const img = el('img'); img.src = `shots/${s.img}.png`; img.style.height = h + 'px'
+  images.add(img)
+  s.page.appendChild(img)
+  for (const p of s.patches ?? []) {
+    p.el = el('div', 'patch')
+    p.el.style.height = h + 'px'
+    p.el.style.backgroundImage = `url(shots/${p.img}.png)`
+    p.el.style.backgroundSize = `1280px ${H(p.img)}px`
+    s.page.appendChild(p.el)
+    const pre = new Image(); pre.src = `shots/${p.img}.png`; images.add(pre)
+  }
+  if (s.typing) {
+    const ty = s.typing
+    ty.el = el('div', 'typing')
+    Object.assign(ty.el.style, { left: ty.rect[0] + 'px', top: ty.rect[1] + 'px', width: ty.rect[2] + 'px', height: ty.rect[3] + 'px', paddingLeft: (ty.x - ty.rect[0]) + 'px', fontSize: ty.size + 'px' })
+    ty.txt = el('span'); ty.car = el('span', 'caret')
+    ty.el.append(ty.txt, ty.car)
+    s.page.appendChild(ty.el)
+  }
+  s.el.appendChild(s.page)
+  const hh = SHOT_META[s.img].headerH || 65
+  if (h > VH) {
+    s.hdr = el('div', 'hdr')
+    Object.assign(s.hdr.style, { height: hh + 'px', backgroundImage: `url(shots/${s.img}.png)`, backgroundSize: `1280px ${h}px` })
+    s.el.appendChild(s.hdr)
+  }
+  cam.appendChild(s.el)
+  shotById[s.id] = s
+}
+SHOTS.forEach((s, i) => { s.out = i + 1 < SHOTS.length ? SHOTS[i + 1].in + SHOTS[i + 1].fd + 0.02 : 1e9 })
+
+for (const r of RINGS) {
+  r.el = el('div', 'ring'); r.lab = el('div', 'rlabel', `${icon(r.icon, 19, 2.4)}<span>${r.label}</span>`)
+  ov.append(r.el, r.lab)
+}
+const ripples = CLICKS.map(() => { const e = el('div', 'ripple'); ov.appendChild(e); return e })
+const cursor = el('div', null, `<svg width="30" height="30" viewBox="0 0 30 30"><path d="M6 3.5 L6 23.5 L11.2 18.6 L14.9 26.6 L18.6 25 L15 17.2 L21.8 17.2 Z" fill="#202124" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`)
+cursor.id = 'cursor'
+ov.appendChild(cursor)
+for (const m of MODES) { m.el = el('div', 'mode', `${icon(m.icon, 24, 2.2)}<span>${m.text}</span>`); ov.appendChild(m.el) }
+const waves = el('div', null, `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"><path d="M14 22 Q20 30 14 38"/><path d="M22 16 Q32 30 22 44"/><path d="M30 10 Q44 30 30 50"/></svg>`)
+waves.id = 'waves'; ov.appendChild(waves)
+const wavePaths = [...waves.querySelectorAll('path')]
+const waveRing = RINGS.find((r) => r.waves)
+
+const panel = $('panel')
+for (const p of PANELS) {
+  p.el = el('div', 'pb')
+  let html = p.eyebrow ? `<div class="eyebrow">${p.eyebrow}</div>` : ''
+  html += `<h2>${p.title}</h2><p class="sub">${p.sub}</p>`
+  if (p.chips) html += `<div class="th">Under the hood</div><div class="chips">${p.chips.map(([i, t]) => `<span class="chip">${icon(i, 20, 2.2)}${t}</span>`).join('')}</div>`
+  if (p.aud) html += `<div class="th">Designed for</div><div class="chips wrap aud-wrap">${p.aud.map(([i, t]) => `<span class="chip aud sm">${icon(i, 17, 2.2)}${t}</span>`).join('')}</div>`
+  p.el.innerHTML = html
+  p.chipEls = [...p.el.querySelectorAll('.chips:not(.aud-wrap) .chip')]
+  p.audEls = [...p.el.querySelectorAll('.aud-wrap .chip')]
+  panel.insertBefore(p.el, $('persona'))
+}
+
+// phone
+for (const p of PHONE) { p.el = el('img'); p.el.src = `shots/${p.img}.png`; $('pscreen').appendChild(p.el); images.add(p.el) }
+for (const r of PRINGS) { r.el = el('div', 'ring'); r.lab = el('div', 'rlabel', `${icon(r.icon, 16, 2.4)}<span>${r.label}</span>`); $('pov').append(r.el, r.lab) }
+for (const tp of PTAPS) { tp.el = el('div', 'tap'); $('pov').appendChild(tp.el) }
+for (const pk of PACKETS) { pk.el = el('div', 'pkt'); $('pkts').appendChild(pk.el) }
+$('nic').innerHTML = icon('container', 28, 2)
+$('lab-laptop').innerHTML = `${icon('laptop', 22, 2.2)}Riley’s laptop`
+$('lab-phone').innerHTML = `${icon('smartphone', 22, 2.2)}Ben’s phone · host`
+$('latency').innerHTML = `${icon('zap', 16, 2.4)}≈ 0.1 s per update`
+for (const id of ['w1', 'w2']) { const l = $(id); l.setAttribute('stroke-width', '4'); l.setAttribute('stroke-linecap', 'round') }
+
+// hook
+const words = (box, text) => { box.innerHTML = text.split(' ').map((w, i, a) => `<span class="w">${w}${i < a.length - 1 ? ' ' : ''}</span>`).join(''); return [...box.querySelectorAll('.w')] }
+const hl1 = words($('hl1'), 'Calgary has something on every night.')
+const hl2 = words($('hl2'), 'The hard part is walking in alone.')
+const STATS = [
+  { icon: 'user-round', value: 23, dec: 0, label: 'of Canadians aged 15–24 often or always feel lonely', src: 'Statistics Canada · Canadian Social Survey, 2021', at: 8.2 },
+  { icon: 'accessibility', value: 27, dec: 0, label: 'of Canadians aged 15 and older have a disability', src: 'Statistics Canada · Canadian Survey on Disability, 2022', at: 12.1 },
+  { icon: 'trending-up', value: 5.6, dec: 1, label: 'Calgary’s growth in 2023, the fastest since the early ’80s', src: 'City of Calgary · Spring 2024 Population Outlook', at: 16.1 },
+]
+for (const st of STATS) {
+  st.el = el('div', 'stat', `<div class="ic">${icon(st.icon, 30, 2.2)}</div><div class="num">0%</div><div class="lbl">${st.label}</div><div class="src">${st.src}</div>`)
+  st.num = st.el.querySelector('.num')
+  $('stats').appendChild(st.el)
+}
+// intro
+const PRINCIPLES = [['users', 'Group-first, not profile-first', 2.0], ['eye-off', 'No follower counts. No feeds.', 4.9], ['star', 'Rate events, never people', 7.0]]
+const prEls = PRINCIPLES.map(([i, t]) => { const e = el('div', 'pr', `${icon(i, 30, 2.2)}${t}`); $('principles').appendChild(e); return e })
+// stack
+const row = (i, t) => `<div class="row">${icon(i, 20, 2.2)}<span>${t}</span></div>`
+const head = (i, t, sub) => `<div class="ch"><span class="ic">${icon(i, 26, 2.2)}</span>${t}</div>${sub ? `<p class="cs">${sub}</p>` : ''}`
+$('cA').innerHTML = head('code-xml', 'In the browser', 'React 19 · TypeScript · Vite · Tailwind CSS v4') + [
+  ['sparkles', 'Pure, tested rules: matching · fair ranking · smart search'], ['map', 'Leaflet + OpenStreetMap'], ['audio-lines', 'Web Speech API: read aloud + voice search'],
+  ['shield-check', 'Google Identity Services'], ['accessibility', 'WCAG 2.2 AA · Atkinson Hyperlegible']].map(([i, t]) => row(i, t)).join('')
+$('cB').innerHTML = head('layers', 'One data layer', 'Storage adapter')
+$('cB2').innerHTML = head('hard-drive', 'localStorage', 'Works offline')
+$('cC1').innerHTML = head('radio', 'Tandem Live', 'Our sync server · today') + row('zap', 'Node.js · zero dependencies · SSE') + row('container', 'Docker · runs free on a laptop')
+$('cC2').innerHTML = head('database', 'Supabase', 'Ready for a city-wide rollout') + row('lock', 'Postgres · row-level security') + row('radio', 'Realtime · Google OAuth')
+const rowsA = [...$('cA').querySelectorAll('.row')]
+const PROOF = [['check', '44 unit tests', 14.4], ['badge-check', '17 end-to-end checks · 20 workflows', 15.3], ['accessibility', '0 accessibility violations · 18 pages', 17.0], ['eye', 'WCAG 2.2 AA', 17.9]]
+const proofEls = PROOF.map(([i, t]) => { const e = el('div', 'pf', `${icon(i, 22, 2.4)}${t}`); $('proof').appendChild(e); return e })
+const sparks = [0, 1, 2].map(() => { const e = el('div', 'spk'); $('spk').appendChild(e); return e })
+let stackWires = []
+// close
+words($('cl1'), 'Tandem doesn’t measure how many people follow you.')
+words($('cl2'), 'It helps you find people to go somewhere with.')
+const cl1 = [...$('cl1').querySelectorAll('.w')], cl2 = [...$('cl2').querySelectorAll('.w')]
+
+/* geometry measured once fonts are ready */
+let HERO = null
+function measure() {
+  const hero = $('hero')
+  const w = hero.offsetWidth, h = hero.offsetHeight
+  HERO = { w, h, x0: 960 - w / 2, y0: 392 - h / 2, x1: 64, y1: 64 - (h * 0.2) / 2 }
+  // stack wires: card edge midpoints (cards are absolutely positioned in stage px)
+  const box = (id) => { const e = $(id); return { x: e.offsetLeft, y: e.offsetTop, w: e.offsetWidth, h: e.offsetHeight } }
+  const A = box('cA'), B = box('cB'), B2 = box('cB2'), C1 = box('cC1'), C2 = box('cC2')
+  const curve = (x0, y0, x1, y1) => { const dx = (x1 - x0) * 0.5; return [[x0, y0], [x0 + dx, y0], [x1 - dx, y1], [x1, y1]] }
+  stackWires = [
+    { pts: curve(A.x + A.w, A.y + A.h / 2, B.x, B.y + B.h / 2), at: 6.2 },
+    { pts: curve(B.x + B.w, B.y + B.h * 0.35, C1.x, C1.y + C1.h / 2), at: 7.6 },
+    { pts: curve(B.x + B.w, B.y + B.h * 0.65, C2.x, C2.y + C2.h / 2), at: 10.9 },
+    { pts: [[B.x + B.w / 2, B.y + B.h], [B.x + B.w / 2, B.y + B.h + 30], [B2.x + B2.w / 2, B2.y - 30], [B2.x + B2.w / 2, B2.y]], at: 6.4 },
+  ]
+  const svg = $('stack-wires')
+  svg.innerHTML = ''
+  for (const wr of stackWires) {
+    const [p0, p1, p2, p3] = wr.pts
+    wr.el = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    wr.el.setAttribute('d', `M${p0[0]} ${p0[1]} C${p1[0]} ${p1[1]} ${p2[0]} ${p2[1]} ${p3[0]} ${p3[1]}`)
+    wr.el.setAttribute('fill', 'none'); wr.el.setAttribute('stroke', '#e8a0ad'); wr.el.setAttribute('stroke-width', '4'); wr.el.setAttribute('stroke-linecap', 'round')
+    svg.appendChild(wr.el)
+    wr.len = 0
+    let prev = p0
+    for (let i = 1; i <= 40; i++) { const q = bez(wr.pts, i / 40); wr.len += Math.hypot(q[0] - prev[0], q[1] - prev[1]); prev = q }
+    wr.el.setAttribute('stroke-dasharray', `${wr.len} ${wr.len}`)
+  }
+}
+function bez([p0, p1, p2, p3], u) {
+  const v = 1 - u
+  return [0, 1].map((j) => v * v * v * p0[j] + 3 * v * v * u * p1[j] + 3 * v * u * u * p2[j] + u * u * u * p3[j])
+}
+
+/* ============================================================== per-frame state */
+function scrollOf(s, t) { return track(s.scroll.length > 1 ? s.scroll : [[0, s.scroll[0][1]]], t) }
+function camAt(t) {
+  let [z, cx, cy] = track(CAM.map(([tt, ...v]) => [tt, v]), t)
+  const hx = VW / (2 * z), hy = VH / (2 * z)
+  cx = Math.max(hx, Math.min(VW - hx, cx)); cy = Math.max(hy, Math.min(VH - hy, cy))
+  return { z, cx, cy }
+}
+const toScreen = (c, vx, vy) => [(vx - c.cx) * c.z * S + (VW * S) / 2, (vy - c.cy) * c.z * S + (VH * S) / 2]
+function placeLabel(lab, rx, ry, rw, rh, pos, bw = VW * S, bh = VH * S) {
+  const w = lab.offsetWidth, h = lab.offsetHeight, g = 14
+  let x, y
+  if (pos === 'top') { x = rx + rw / 2 - w / 2; y = ry - g - h }
+  else if (pos === 'bottom') { x = rx + rw / 2 - w / 2; y = ry + rh + g }
+  else if (pos === 'left') { x = rx - g - w; y = ry + rh / 2 - h / 2 }
+  else { x = rx + rw + g; y = ry + rh / 2 - h / 2 }
+  x = Math.max(12, Math.min(bw - w - 12, x)); y = Math.max(12, Math.min(bh - h - 12, y))
+  return [x, y]
+}
+
+function seekSlides(t) {
+  /* hook: headline, then stats */
+  const hookOn = t < at('intro', 0.8)
+  show($('s-hook'), hookOn)
+  if (hookOn) {
+    const out = ease(ramp(t, at('intro', 0), at('intro', 0.6)))
+    $('s-hook').style.opacity = 1 - out
+    $('s-hook').style.transform = `translateY(${-30 * out}px)`
+    hl1.forEach((w, i) => enter(w, t, at('hook', 0.5) + i * 0.07, { dur: 0.45, dy: 26 }))
+    hl2.forEach((w, i) => enter(w, t, at('hook', 5.4) + i * 0.07, { dur: 0.45, dy: 26 }))
+    const k = ease(ramp(t, at('hook', 7.6), at('hook', 8.4)))
+    $('hook-head').style.transform = `translateY(${-178 * k}px) scale(${lerp(1, 0.6, k)})`
+    for (const st of STATS) {
+      const t0 = at('hook', st.at)
+      const kk = easeOut(ramp(t, t0, t0 + 0.55))
+      st.el.style.opacity = kk
+      st.el.style.transform = `translateY(${lerp(46, 0, kk)}px)`
+      const v = st.value * easeOut(ramp(t, t0 + 0.1, t0 + 1.3))
+      st.num.textContent = v.toFixed(st.dec) + '%'
+    }
+  }
+  /* big skyline: hook + intro, again for the close */
+  const skyIn = (t0) => (b, i) => { const k = backOut(ramp(t, t0 + i * 0.07, t0 + i * 0.07 + 0.55)); b.style.transform = `scaleY(${Math.max(0, k)})` }
+  const skyOut = ease(ramp(t, at('intro', 10.2), at('intro', 10.9)))
+  const closeSky = t >= at('close', 0)
+  if (closeSky) bigBuildings.forEach(skyIn(at('close', 0.1)))
+  else bigBuildings.forEach(skyIn(at('hook', 0)))
+  $('bigsky').style.opacity = closeSky ? 0.5 * ease(ramp(t, at('close', 0), at('close', 0.4))) : 0.5 * (1 - skyOut)
+  show($('bigsky'), closeSky || t < at('intro', 11))
+
+  /* intro: logo lock-up flies into the top bar */
+  const introOn = t >= at('intro', 0) && t < at('intro', 11.2)
+  show($('s-intro'), introOn)
+  if (introOn) {
+    const out = ease(ramp(t, at('intro', 10.0), at('intro', 10.6)))
+    enter($('intro-tag'), t, at('intro', 0.9), { dur: 0.5, dy: 18 })
+    $('intro-tag').style.opacity *= 1 - out
+    prEls.forEach((e, i) => { const k = enter(e, t, at('intro', PRINCIPLES[i][2]), { dur: 0.45, dy: 22 }); e.style.opacity = k * (1 - out); e.style.transform += ` scale(${lerp(0.94, 1, easeOut(ramp(t, at('intro', PRINCIPLES[i][2]), at('intro', PRINCIPLES[i][2] + 0.45))))})` })
+  }
+  const heroOn = HERO && t >= at('intro', 0) && t < SC.intro.end
+  show($('hero'), heroOn)
+  if (heroOn) {
+    const kin = easeOut(ramp(t, at('intro', 0.3), at('intro', 1.0)))
+    const fly = ease(ramp(t, at('intro', 10.2), SC.intro.end - 0.05))
+    const sc = lerp(lerp(0.92, 1, kin), 0.2, fly)
+    const cx = lerp(HERO.x0 + (HERO.w * (1 - sc)) / 2, HERO.x1, fly)
+    const cy = lerp(HERO.y0 + (HERO.h * (1 - sc)) / 2 + 20 * (1 - kin), HERO.y1, fly)
+    $('hero').style.opacity = kin
+    $('hero').style.transform = `translate(${cx}px, ${cy}px) scale(${sc})`
+  }
+
+  /* how it's built */
+  const stackOn = t >= at('stack', 0.2) && t < at('close', 0.8)
+  show($('s-stack'), stackOn)
+  if (stackOn) {
+    const out = ease(ramp(t, at('close', 0), at('close', 0.6)))
+    $('s-stack').style.opacity = 1 - out
+    enter($('s-stack').querySelector('.hd'), t, at('stack', 0.4), { dur: 0.5 })
+    enter($('cA'), t, at('stack', 0.9), { dur: 0.5, dy: 30 })
+    rowsA.forEach((r, i) => {
+      const k = easeOut(ramp(t, at('stack', 1.3 + i * 0.12), at('stack', 1.7 + i * 0.12)))
+      r.style.opacity = k; r.style.transform = `translateX(${lerp(-14, 0, k)}px)`
+      const hi = i === 0 ? ramp(t, at('stack', 3.2), at('stack', 3.5)) * (1 - ramp(t, at('stack', 6.6), at('stack', 6.9))) : 0
+      r.style.background = hi > 0.5 ? 'var(--tint)' : 'var(--mist)'
+      r.style.borderColor = hi > 0.5 ? 'var(--soft)' : 'transparent'
+      r.style.color = hi > 0.5 ? 'var(--brand-deep)' : 'var(--ink-soft)'
+    })
+    enter($('cB'), t, at('stack', 6.0), { dur: 0.45, dy: 24 })
+    enter($('cB2'), t, at('stack', 6.4), { dur: 0.45, dy: 24 })
+    enter($('cC1'), t, at('stack', 7.4), { dur: 0.5, dy: 30 })
+    enter($('cC2'), t, at('stack', 10.8), { dur: 0.5, dy: 30 })
+    for (const wr of stackWires) wr.el.setAttribute('stroke-dashoffset', String(wr.len * (1 - ease(ramp(t, at('stack', wr.at), at('stack', wr.at + 0.6))))))
+    // data flowing browser → data layer → Tandem Live
+    const flowOn = ramp(t, at('stack', 8.2), at('stack', 8.5))
+    sparks.forEach((sp, i) => {
+      const u = (((t - at('stack', 8.2)) / 1.8 + i / 3) % 1 + 1) % 1
+      const [a, b2] = [stackWires[0], stackWires[1]]
+      const uu = u < 0.5 ? u * 2 : (u - 0.5) * 2
+      const p = bez(u < 0.5 ? a.pts : b2.pts, uu)
+      sp.style.left = p[0] + 'px'; sp.style.top = p[1] + 'px'
+      sp.style.opacity = flowOn * clamp01(Math.sin(uu * Math.PI) * 4)
+    })
+    proofEls.forEach((e, i) => { enter(e, t, at('stack', PROOF[i][2]), { dur: 0.45, dy: 20 }); e.style.transform += ` scale(${lerp(0.9, 1, backOut(ramp(t, at('stack', PROOF[i][2]), at('stack', PROOF[i][2] + 0.45))))})` })
+  }
+
+  /* close */
+  const closeOn = t >= at('close', 0.2)
+  show($('s-close'), closeOn)
+  if (closeOn) {
+    enter($('close-lock'), t, at('close', 0.3), { dur: 0.6, dy: 30 })
+    cl1.forEach((w, i) => enter(w, t, at('close', 0.5) + i * 0.06, { dur: 0.4, dy: 20 }))
+    cl2.forEach((w, i) => enter(w, t, at('close', 3.9) + i * 0.06, { dur: 0.4, dy: 20 }))
+    enter($('team'), t, at('close', 5.0), { dur: 0.5, dy: 16 })
+  }
+}
+
+function seekDevices(t, dm) {
+  const on = dm > 0.001
+  for (const id of ['phone', 'node', 'wires', 'lab-laptop', 'lab-phone', 'pkts', 'latency']) show($(id), on)
+  if (!on) return
+  const kPhone = ease(ramp(dm, 0.25, 1))
+  $('phone').style.opacity = kPhone
+  $('phone').style.transform = `translateX(${lerp(460, 0, kPhone)}px)`
+  const kNode = ease(ramp(dm, 0.55, 1))
+  const offline = t >= OFFLINE[0] && t < OFFLINE[1]
+  const pulse = PULSES.reduce((m, p) => (t >= p ? Math.max(m, 1 - ramp(t, p, p + 0.35)) : m), 0)
+  $('node').style.opacity = kNode
+  $('node').style.transform = `translate(-50%, -50%) scale(${lerp(0.9, 1, kNode) + 0.06 * pulse})`
+  $('node').style.borderColor = offline ? 'var(--line-strong)' : pulse > 0 ? 'var(--brand)' : 'var(--line)'
+  $('nic').style.background = offline ? 'var(--mist)' : 'var(--tint)'
+  $('nic').style.color = offline ? 'var(--muted)' : 'var(--brand)'
+  $('nic').innerHTML = icon(offline ? 'wifi-off' : 'container', 28, 2)
+  $('ndot').style.background = offline ? '#9aa0a6' : '#1e8e3e'
+  $('nst').style.background = offline ? 'var(--mist)' : 'var(--success-tint)'
+  $('nst').style.color = offline ? 'var(--muted)' : 'var(--success)'
+  $('ntext').textContent = offline ? 'Server offline' : 'Online · 2 devices'
+  for (const id of ['w1', 'w2']) {
+    const l = $(id)
+    l.setAttribute('stroke', offline ? '#c4c7cc' : '#e8a0ad')
+    l.setAttribute('stroke-dasharray', offline ? '6 9' : '10 8')
+    l.setAttribute('stroke-dashoffset', offline ? '0' : String(-t * 40))
+  }
+  $('wires').style.opacity = kNode
+  $('lab-laptop').style.opacity = ease(ramp(dm, 0.6, 1))
+  $('lab-phone').style.opacity = kPhone
+  $('latency').style.opacity = kNode * ramp(t, at('chat', 12.0), at('chat', 12.4)) * (1 - ramp(t, OFFLINE[0], OFFLINE[0] + 0.3))
+  // phone screen
+  for (const p of PHONE) {
+    const next = PHONE[PHONE.indexOf(p) + 1]
+    const vis = t >= p.in && (!next || t < next.in + next.fd + 0.02)
+    p.el.style.display = vis ? 'block' : 'none'
+    if (vis) p.el.style.opacity = p.fd ? ease(ramp(t, p.in, p.in + p.fd)) : 1
+  }
+  for (const r of PRINGS) {
+    const vis = t >= r.from && t < r.to
+    r.el.style.display = vis ? 'block' : 'none'; r.lab.style.display = vis ? 'flex' : 'none'
+    if (!vis) continue
+    const k = easeOut(ramp(t, r.from, r.from + 0.2)) * (1 - ease(ramp(t, r.to - 0.16, r.to)))
+    const pad = 5, [x, y, w, h] = r.rect.map((v) => v * PS)
+    Object.assign(r.el.style, { left: (x - pad) + 'px', top: (y - pad) + 'px', width: (w + 2 * pad) + 'px', height: (h + 2 * pad) + 'px', opacity: k })
+    const [lx, ly] = placeLabel(r.lab, x - pad, y - pad, w + 2 * pad, h + 2 * pad, 'top', 351, 760)
+    Object.assign(r.lab.style, { left: lx + 'px', top: ly + 'px', opacity: k })
+  }
+  for (const tp of PTAPS) {
+    const k = ramp(t, tp.t - 0.05, tp.t + 0.4)
+    tp.el.style.display = k > 0 && k < 1 ? 'block' : 'none'
+    tp.el.style.left = tp.x * PS + 'px'; tp.el.style.top = tp.y * PS + 'px'
+    tp.el.style.opacity = 1 - k; tp.el.style.transform = `scale(${lerp(0.6, 1.3, easeOut(k))})`
+  }
+  for (const pk of PACKETS) {
+    const end = pk.hold ?? pk.t1
+    const vis = t >= pk.t0 && t < end
+    pk.el.style.display = vis ? 'block' : 'none'
+    if (!vis) continue
+    const k = ease(ramp(t, pk.t0, pk.t1))
+    pk.el.style.left = lerp(pk.x0, pk.x1, k) + 'px'
+    pk.el.style.top = WY + 'px'
+    pk.el.style.opacity = pk.hold && t > pk.t1 ? 0.55 + 0.45 * Math.abs(Math.sin((t - pk.t1) * 4)) : 1
+  }
+}
+
+function seek(t) {
+  seekSlides(t)
+  const dm = dmAt(t)
+
+  /* demo chrome: in at the end of the intro, out at the start of "how it's built" */
+  const kin = easeOut(ramp(t, at('intro', 10.5), SC.intro.end + 0.3))
+  const kout = ease(ramp(t, at('stack', 0), at('stack', 0.7)))
+  const demoOn = kin > 0 && kout < 1
+  for (const id of ['browser', 'panel', 'topbar']) show($(id), demoOn)
+  $('skyline').style.opacity = 0.55 * kin * (1 - kout)
+  if (demoOn) {
+    const vis = kin * (1 - kout)
+    $('topbar').style.opacity = 1 - kout
+    $('brand').style.opacity = t >= SC.intro.end - 0.05 ? 1 : 0
+    $('pills').style.opacity = ease(ramp(t, at('signup', 0), at('signup', 0.5)))
+    const s0 = lerp(0.985, 1, kin) - 0.02 * kout
+    const s = s0 * (1 - 0.2 * dm)
+    const ty = lerp(30, 0, kin) + 87.6 * dm
+    // scale about the frame's centre while entering, about its top-left in device mode
+    const ox = 664 * (1 - s0), oy = 438 * (1 - s0)
+    $('browser').style.opacity = vis
+    $('browser').style.transform = `translate(${ox}px, ${oy + ty}px) scale(${s})`
+    $('panel').style.opacity = vis * (1 - ease(ramp(dm, 0, 0.5)))
+    const pe = easeOut(ramp(t, at('signup', 0.6), at('signup', 1.1)))
+    $('persona').style.opacity = pe
+    $('persona').style.transform = `translateY(${lerp(18, 0, pe)}px)`
+  }
+
+  /* step pills */
+  STEPS.forEach((s, i) => {
+    const p = pillEls[i]
+    const active = t >= s.from && t < s.to
+    const done = t >= s.to
+    const k = ease(ramp(t, s.from, s.from + 0.25))
+    if (active) { p.style.background = `rgb(${lerp(255, 200, k)} ${lerp(255, 16, k)} ${lerp(255, 46, k)})`; p.style.color = k > 0.5 ? '#fff' : 'var(--muted)'; p.style.borderColor = 'transparent'; p.style.transform = `scale(${lerp(1, 1.06, k)})` }
+    else if (done) { p.style.background = 'var(--tint)'; p.style.color = 'var(--brand-deep)'; p.style.borderColor = 'var(--soft)'; p.style.transform = 'scale(1)' }
+    else { p.style.background = '#fff'; p.style.color = 'var(--muted)'; p.style.borderColor = 'var(--line)'; p.style.transform = 'scale(1)' }
+    p.firstChild.innerHTML = done ? icon('check', 16, 3) : ''
+  })
+
+  seekDevices(t, dm)
+  if (!demoOn) return
+
+  /* camera + shots */
+  const c = camAt(t)
+  cam.style.transform = `translate(${(VW * S) / 2 - c.cx * c.z * S}px, ${(VH * S) / 2 - c.cy * c.z * S}px) scale(${c.z * S})`
+  let top = null
+  for (const s of SHOTS) {
+    const visible = t >= s.in && t < s.out
+    s.el.style.display = visible ? 'block' : 'none'
+    if (!visible) continue
+    top = s
+    s.el.style.opacity = s.fd ? ease(ramp(t, s.in, s.in + s.fd)) : 1
+    if (s.xf) {
+      const [sc, ox, oy] = track(s.xf.map(([tt, ...v]) => [tt, v]), t)
+      s.el.style.transform = `translate(${ox}px, ${oy}px) scale(${sc}) translate(${-ox}px, ${-oy}px)`
+    }
+    const y = scrollOf(s, t)
+    s.page.style.transform = `translateY(${-y}px)`
+    if (s.hdr) s.hdr.style.display = y > 1 ? 'block' : 'none'
+    for (const p of s.patches ?? []) {
+      const k = ramp(t, p.at, p.at + p.dur)
+      if (k <= 0) { p.el.style.display = 'none'; continue }
+      p.el.style.display = 'block'
+      if (p.kind === 'circle') {
+        p.el.style.clipPath = `circle(${p.r * backOut(k)}px at ${p.c[0]}px ${p.c[1]}px)`
+        p.el.style.opacity = 1
+      } else {
+        const [x, yy, w, hh] = p.rect
+        const ww = p.kind === 'wipe' ? w * ease(k) : w
+        p.el.style.clipPath = `inset(${yy}px ${1280 - x - ww}px ${s.h - yy - hh}px ${x}px round 8px)`
+        p.el.style.opacity = p.kind === 'wipe' ? 1 : ease(k)
+        if (p.kind === 'pop') {
+          const e = backOut(k)
+          p.el.style.transformOrigin = `${p.origin[0]}px ${p.origin[1]}px`
+          p.el.style.transform = `scale(${lerp(0.82, 1, e)})`
+        }
+      }
+    }
+    if (s.typing) {
+      const ty = s.typing
+      const on = t >= ty.caret[0] && t < ty.caret[1]
+      ty.el.style.display = on ? 'flex' : 'none'
+      const n = Math.round(ty.text.length * ramp(t, ty.from, ty.to))
+      ty.txt.textContent = ty.text.slice(0, n)
+      ty.car.style.opacity = t < ty.to ? 1 : Math.floor(t * 3.2) % 2 === 0 ? 1 : 0
+    }
+  }
+  if (top) $('url').innerHTML = `${icon('globe', 15, 2)}<span>localhost:5173<b>${top.url}</b></span>`
+
+  /* rings */
+  for (const r of RINGS) {
+    const s = shotById[r.shot]
+    const vis = t >= r.from && t < r.to && t >= s.in && t < s.out
+    r.el.style.display = vis ? 'block' : 'none'
+    r.lab.style.display = vis ? 'flex' : 'none'
+    if (!vis) continue
+    const k = easeOut(ramp(t, r.from, r.from + 0.2)) * (1 - ease(ramp(t, r.to - 0.16, r.to)))
+    const y = scrollOf(s, t)
+    const pad = 7
+    const [x0, y0] = toScreen(c, r.rect[0] - pad, r.rect[1] - y - pad)
+    const [x1, y1] = toScreen(c, r.rect[0] + r.rect[2] + pad, r.rect[1] + r.rect[3] - y + pad)
+    const grow = lerp(1.08, 1, easeOut(ramp(t, r.from, r.from + 0.25)))
+    Object.assign(r.el.style, { left: x0 + 'px', top: y0 + 'px', width: (x1 - x0) + 'px', height: (y1 - y0) + 'px', opacity: k, transform: `scale(${grow})` })
+    const [lx, ly] = placeLabel(r.lab, x0, y0, x1 - x0, y1 - y0, r.pos)
+    Object.assign(r.lab.style, { left: lx + 'px', top: ly + 'px', opacity: k, transform: `translateY(${lerp(8, 0, easeOut(ramp(t, r.from + 0.05, r.from + 0.3)))}px)` })
+  }
+
+  /* cursor */
+  let cpos = null, cop = 0
+  for (const sg of CURSOR) {
+    if (t < sg.from || t > sg.to) continue
+    const s = shotById[sg.shot]
+    const kv = sg.kf.map(([tt, x, yy]) => [tt, [x, yy - scrollOf(s, tt)]])
+    const [vx, vy] = track(kv, t)
+    cpos = toScreen(c, vx, vy)
+    cop = ramp(t, sg.from, sg.from + 0.15) * (1 - ramp(t, sg.to - 0.15, sg.to))
+  }
+  cursor.style.display = cpos ? 'block' : 'none'
+  if (cpos) {
+    const press = CLICKS.some((ct) => t >= ct - 0.05 && t < ct + 0.1) ? 0.86 : 1
+    cursor.style.opacity = cop
+    cursor.style.transform = `translate(${cpos[0] - 6}px, ${cpos[1] - 3.5}px) scale(${press})`
+  }
+  CLICKS.forEach((ct, i) => {
+    const k = ramp(t, ct, ct + 0.45)
+    const e = ripples[i]
+    if (k <= 0 || k >= 1 || !cpos) { e.style.display = 'none'; return }
+    e.style.display = 'block'
+    e.style.left = cpos[0] + 'px'; e.style.top = cpos[1] + 'px'
+    e.style.opacity = 0.9 * (1 - k)
+    e.style.transform = `scale(${lerp(0.2, 1, easeOut(k))})`
+  })
+
+  /* display-mode toasts */
+  for (const m of MODES) {
+    const vis = t >= m.from && t < m.to
+    m.el.style.display = vis ? 'flex' : 'none'
+    if (!vis) continue
+    const k = easeOut(ramp(t, m.from, m.from + 0.22)) * (1 - ease(ramp(t, m.to - 0.15, m.to)))
+    m.el.style.opacity = k
+    m.el.style.transform = `translateX(-50%) translateY(${lerp(16, 0, k)}px)`
+  }
+
+  /* read-aloud waves */
+  const wv = t >= waveRing.from + 0.1 && t < waveRing.to
+  waves.style.display = wv ? 'block' : 'none'
+  if (wv) {
+    const s = shotById[waveRing.shot]
+    const [wx, wy] = toScreen(c, waveRing.rect[0] + waveRing.rect[2] + 4, waveRing.rect[1] + waveRing.rect[3] / 2 - scrollOf(s, t))
+    waves.style.left = wx + 'px'; waves.style.top = (wy - 30) + 'px'
+    waves.style.opacity = ease(ramp(t, waveRing.from + 0.1, waveRing.from + 0.35)) * (1 - ease(ramp(t, waveRing.to - 0.16, waveRing.to)))
+    wavePaths.forEach((p, i) => { p.style.opacity = 0.2 + 0.8 * Math.max(0, Math.sin((t * 2.6 - i * 0.22) * Math.PI)) })
+  }
+
+  /* side panel */
+  for (const p of PANELS) {
+    const vis = t >= p.from - 0.01 && t < p.to
+    p.el.style.display = vis ? 'block' : 'none'
+    if (!vis) continue
+    const kin2 = easeOut(ramp(t, p.from, p.from + 0.38))
+    const kout2 = ease(ramp(t, p.to - 0.22, p.to))
+    p.el.style.opacity = kin2 * (1 - kout2)
+    p.el.style.transform = `translateY(${lerp(22, 0, kin2) - 12 * kout2}px)`
+    p.chipEls.forEach((ch, i) => { const k = easeOut(ramp(t, p.from + 0.18 + i * 0.08, p.from + 0.45 + i * 0.08)); ch.style.opacity = k; ch.style.transform = `translateX(${lerp(-14, 0, k)}px)` })
+    p.audEls.forEach((ch, i) => { const k = backOut(ramp(t, p.from + 0.35 + i * 0.1, p.from + 0.65 + i * 0.1)); ch.style.opacity = clamp01(k); ch.style.transform = `scale(${lerp(0.7, 1, Math.min(k, 1.05))})` })
+  }
+}
+window.seek = seek
+window.DURATION = DURATION
+
+Promise.all([...images].map((img) => (img.decode ? img.decode().catch(() => {}) : null)).concat([document.fonts.ready])).then(() => {
+  // lay out hidden slides once so they can be measured
+  for (const id of ['s-stack', 'hero']) $(id).style.display = ''
+  measure()
+  seek(0)
+  window.READY = true
+  if (new URLSearchParams(location.search).has('play')) {
+    const t0 = performance.now()
+    const loop = () => { const t = ((performance.now() - t0) / 1000) % (DURATION + 1); seek(Math.min(t, DURATION)); requestAnimationFrame(loop) }
+    loop()
+  }
+  const q = new URLSearchParams(location.search).get('t')
+  if (q) seek(Number(q))
+})
+</script>
+</body>
+</html>

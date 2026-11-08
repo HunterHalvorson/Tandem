@@ -1,240 +1,297 @@
-# Tandem — Find your people. Find your Calgary.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/tandem-wordmark-white.png">
+    <img src="docs/images/tandem-wordmark.png" alt="Tandem" width="400">
+  </picture>
+</p>
 
-**Tandem** — named after the tandem bicycle: people moving together toward a shared destination — is a Calgary-first web app that
-helps residents, newcomers and visitors find people to **do things with** — running clubs, book clubs, hikes, jam
-sessions, volunteering and more. It is **group-first, not profile-first**: no followers, no likes, no feeds, no personal
-ratings. Events are reviewed — never people — and *Tandem Miles* celebrate showing up.
+<h3 align="center">Find your people. Find your Calgary.</h3>
 
-> *“Tandem doesn't measure how many people follow you. It helps you find people to go somewhere with.”*
+<p align="center">
+  A group-first way for Calgarians, newcomers and visitors to find people to do things with,<br>
+  so that walking in alone is never the hard part.
+</p>
 
-Built for the **Code the Change** hackathon (Calgary, Nov 2026) — Prompt 1: *How can we leverage technology to promote
-health, social connection, and well-being in our communities?* Also targeting **Best Local Impact** and **Best in
-Accessibility**.
+<p align="center">
+  <a href="https://youtu.be/-TkNc9h2p-Q"><img alt="Demo video on YouTube" src="https://img.shields.io/badge/Demo%20video-YouTube-C8102E?logo=youtube&logoColor=white"></a>
+  <img alt="Code the Change 2026" src="https://img.shields.io/badge/Code%20the%20Change-2026-202124">
+  <img alt="WCAG 2.2 AA" src="https://img.shields.io/badge/WCAG%202.2-AA-1E6B3A">
+  <img alt="axe-core: 0 violations on 18 pages" src="https://img.shields.io/badge/axe--core-0%20violations-1E6B3A">
+  <img alt="React 19 and TypeScript" src="https://img.shields.io/badge/React%2019-TypeScript-1D4E89?logo=react&logoColor=white">
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/-TkNc9h2p-Q"><img src="docs/images/video.jpg" alt="Watch the Tandem demo video on YouTube" width="860"></a>
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/-TkNc9h2p-Q"><b>Watch the demo</b></a> ·
+  <a href="#a-walk-through-the-app">See the app</a> ·
+  <a href="#accessibility-and-trust">Accessibility and trust</a> ·
+  <a href="#how-its-built">How it's built</a> ·
+  <a href="#run-it-locally">Run it locally</a>
+</p>
+
+> *Tandem doesn't measure how many people follow you. It helps you find people to go somewhere with.*
+
+Built in Calgary for **Code the Change 2026** by **LeGroup** (Falah Sheikh and Hunter Halvorson), for Prompt 1:
+*How can we leverage technology to promote health, social connection and well-being in our communities?*
+The name comes from the tandem bicycle: people moving together toward the same place.
 
 ---
 
-## Quick start
+## Why Tandem
 
-Requirements: Node 20+ (tested on Node 22) and npm.
+Calgary has something on every night: run clubs, book clubs, hikes, jam sessions, volunteer shifts. For a lot of
+people the hard part isn't finding an event. It's walking in alone. Social apps count followers and likes, which
+makes that first step harder, not easier.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/why.jpg" alt="23% of Canadians aged 15 to 24 often or always feel lonely. 27% of Canadians aged 15 and older have a disability. Calgary grew 5.6% in 2023, the fastest since the early 1980s."></td>
+    <td width="50%"><img src="docs/images/principles.jpg" alt="Tandem: Find your people. Find your Calgary. Group-first, not profile-first. No follower counts. No feeds. Rate events, never people."></td>
+  </tr>
+</table>
+
+Sources: [Statistics Canada, Canadian Social Survey (2021)](https://www150.statcan.gc.ca/n1/daily-quotidien/211124/dq211124e-eng.htm) ·
+[Statistics Canada, Canadian Survey on Disability (2022)](https://www150.statcan.gc.ca/n1/daily-quotidien/231201/dq231201b-eng.htm) ·
+[City of Calgary, Spring 2024 Population Outlook](https://calgary.ca/content/dam/www/cfod/finance/documents/corporate-economics/calgary-and-region-economic-outlook/spring-2024-calgary-and-region-population-outlook-2024-2029.pdf)
+
+Tandem is **group-first, not profile-first**: no follower counts, no likes, no feeds and no ratings of people. You
+find an activity, see exactly what to expect, say hi to the group before you go, and rate the event afterwards.
+Showing up earns *Tandem Miles*; popularity earns nothing.
+
+## A walk through the app
+
+Meet Riley: visiting Calgary for ten days, and anxious in big groups. Every screen below is the running app.
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/images/search.jpg" alt="Discover page: the search 'quiet small group for visitors' became the filters Quiet, Small groups and Traveller-friendly."><br>
+      <b>Search like you talk.</b> Plain words, or your voice, become real filters. Accessibility filters only count what organizers have confirmed.</td>
+    <td width="50%" valign="top"><img src="docs/images/match.jpg" alt="Event page with a 93% match broken down by interest, date, location, accessibility, budget and beginner-friendliness."><br>
+      <b>Every match explains itself.</b> A rule-based score from interests, timing, distance, access and budget. No AI model, no tracking.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/images/map.jpg" alt="Calgary map with quadrant chips and an event popup with a Join button."><br>
+      <b>One set of filters, two views.</b> The map and the list share the same filters. Private homes only ever show as an approximate area.</td>
+    <td valign="top"><img src="docs/images/access-info.jpg" alt="Comfort and Access section: each feature marked confirmed by organizer, not yet confirmed, or not available."><br>
+      <b>Know before you go.</b> First-Time Friendly details, and access that is confirmed by the organizer, not yet confirmed, or not available. Never assumed.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/images/chat.jpg" alt="Group chat on a laptop and a phone, synced through the Tandem Live server."><br>
+      <b>Say hi before you arrive.</b> Joining unlocks the group chat. Tandem Live syncs every device in about a tenth of a second.</td>
+    <td valign="top"><img src="docs/images/offline.jpg" alt="The server went offline; the message was saved on the laptop and delivered to the phone after the server came back."><br>
+      <b>Keeps working when the server doesn't.</b> Messages are saved on the device and delivered once the server is back.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/images/plan.jpg" alt="Explore Like a Local: a weekend plan of four activities, all joined in one tap."><br>
+      <b>Explore Like a Local.</b> Visitors get a weekend plan built from their interests and comfort settings, and join the whole plan in one tap.</td>
+    <td valign="top"><img src="docs/images/leaderboard.jpg" alt="Leaderboard with the explanation of the Bayesian-adjusted rating."><br>
+      <b>Rate events, never people.</b> Confirmed attendees rate the event once. A Bayesian leaderboard stops a few lucky five-star reviews from outranking events that are consistently great.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/images/display.jpg" alt="Display and accessibility menu with larger text, a readable font and high contrast applied to the event page."><br>
+      <b>Adapts to every Calgarian.</b> Text size, high contrast, reduced motion and a low-vision font change every screen instantly, with no account. Any event can be read aloud.</td>
+    <td valign="top"><img src="docs/images/privacy.jpg" alt="Settings: download my data, delete my account; passwords, government IDs and medical information are never stored."><br>
+      <b>You stay in control.</b> Choose who sees what. Download or delete your data any time. Passwords, IDs and medical details are never stored.</td>
+  </tr>
+</table>
+
+<details>
+<summary><b>Everything else in the app</b></summary>
+
+| Area | Highlights |
+|---|---|
+| **Discovery** | Cards with date, quadrant, price, capacity, demo-verified host, ratings and confirmed accessibility. Filters: price slider ($0–$150+), free only, categories, quadrant, date presets and custom range, group size, seven accessibility features, spaces left, verified host, traveller-friendly, indoor/outdoor. Seven sort orders. Plain-language and voice search. |
+| **Calgary map** | Leaflet and OpenStreetMap, quadrant overlay (NW/NE/SW/SE), category-icon markers (never colour-only), zoom-aware clustering, popups with Join, list/map toggle. Filters live in the URL, so list and map always agree. |
+| **Hosting** | Single-page create/edit form with templates, public place picker or drop-a-pin, private/residential mode, First-Time Friendly details, tri-state accessibility, cancel with a reason, calendar (.ics) export, share, read aloud. |
+| **Group chat** | Per event, attendees and host only. Host announcements, participants list, leave event, report a message. Live across devices with Tandem Live or Supabase. |
+| **Explore Like a Local** | Travel mode with dates, budget and areas; a rule-based Weekend Planner (real events only, no overlaps); *Join all*; save to the dashboard. |
+| **Groups** | Twelve community groups with organizers, guidelines, upcoming and past events, join/leave. |
+| **Reviews and Tandem Miles** | Only checked-in attendees can review, once per event. Miles come from showing up and hosting, with six milestones, and are never ranked publicly. |
+| **Community impact** | A live dashboard of community activity, computed from the data and labelled as demo data. |
+
+Event and group pages use Calgary photography from Wikimedia Commons, with the place, photographer and licence shown.
+</details>
+
+## Accessibility and trust
+
+- **Checked, not just claimed.** axe-core finds **0 violations across 18 pages** (WCAG 2.0, 2.1 and 2.2 A/AA plus best
+  practices). The map works by keyboard, focus is managed between pages, and no information relies on colour alone.
+- **Comfort & Access preferences**: small groups, quiet spaces, sensory-friendly, beginner-friendly and must-have
+  access features. They are practical, private by default, and never medical labels.
+- **Ease Into It** re-ranks every list toward low-pressure events: small groups, clear arrival details, calm settings.
+- **Display & reading menu** in the header, no account needed: text size, high contrast, reduced motion, underlined
+  links and Atkinson Hyperlegible Next. **Read aloud** and **voice search** use the browser's own Web Speech API.
+- **Honest by design.** Access is only shown as confirmed when the organizer confirmed it. Seeded content is labelled
+  as demo data. The simulated ID check says *Demo verified*. Recommendations show their maths. People are never rated.
+- **Private by default.** No passwords, government IDs, medical information or home addresses are stored. Private event
+  locations show an approximate area. Your data can be downloaded or deleted at any time.
+
+## Made for Calgary
+
+- **Calgary built in**: quadrants, neighbourhoods and real public venues such as the Central Library, Prince's Island
+  Park, Bowness Park and Fish Creek.
+- **For newcomers and visitors**: travel mode, the Explore Like a Local planner and traveller-friendly hosts.
+- **For the people who already bring Calgary together**: community associations, libraries, newcomer centres and clubs
+  can publish events from templates and confirm their accessibility.
+- **Free to run**: no paid APIs, OpenStreetMap tiles, a zero-dependency sync server, and Supabase for a city-wide rollout.
+
+## How it's built
+
+<p align="center"><img src="docs/images/stack.jpg" alt="Architecture: the browser app (React 19, TypeScript, pure tested rules, Leaflet, Web Speech API, Google Identity Services) talks to one data layer backed by localStorage, the Tandem Live sync server, or Supabase." width="860"></p>
+
+| Layer | What we used |
+|---|---|
+| App | React 19, TypeScript 5.9, Vite 8, Tailwind CSS v4, React Router 7, lucide icons, Inter and Atkinson Hyperlegible Next |
+| Logic | Pure functions `(db, input, now) → result` for recommendations, filters, smart search, the weekend planner, the leaderboard and Tandem Miles, all unit-tested |
+| Map | Leaflet 1.9 and React-Leaflet 5 with OpenStreetMap tiles and zoom-aware clustering |
+| Data | One storage adapter: localStorage (works offline), then Tandem Live for shared demos, then Supabase |
+| Sync | **Tandem Live** (`server/live-server.mjs`): Node.js with zero dependencies, Server-Sent Events, entity-level updates, atomic JSON persistence, input validation, Docker image |
+| Shared mode | Supabase Postgres with row-level security, security-definer RPCs, row locks for event capacity, Realtime and Google OAuth |
+| Sign-in | Google Identity Services; the ID token's audience, issuer and expiry are checked and the token is never stored |
+| Quality | Vitest, headless-Chrome end-to-end checks, axe-core accessibility audit, oxlint |
+
+<details>
+<summary><b>The algorithms</b></summary>
+
+**Recommendations** (`frontend/src/services/recommendations.ts`)
+1. Hard constraints first: never recommend events that are cancelled, private, already started, full, already joined
+   or hosted by you, over a budget you marked as strict, outside your travel dates, or missing an access feature you
+   marked as a must-have.
+2. Weighted score: interests 35%, date and availability 20%, location 15%, accessibility and comfort 15%, budget 10%,
+   beginner-friendly 5%. Related interests count partially (hiking and photography, for example).
+3. Ease Into It blends in a comfort score: `final = 0.6 × base + 0.4 × comfort`.
+4. Every recommendation says why, and the event page shows the per-factor breakdown.
+
+**Fair leaderboard** (`frontend/src/services/leaderboard.ts`)
+`score = 0.55 × Bayesian rating + 0.20 × attendance vs. capacity + 0.15 × completion + 0.10 × review confidence`,
+with `Bayesian = (C·m + Σ ratings) / (C + n)`, the city-wide mean `m`, `C = 5` and `confidence = n / (n + C)`.
+Activities with fewer than three reviews are listed as **New** instead of being ranked.
+
+**Tandem Miles** (`frontend/src/services/miles.ts`)
+Attending a confirmed event +10, hosting an event that happens +15, first event in a new interest +5, volunteering +10.
+Miles are derived from attendance records, so they can't be farmed.
+
+**Weekend planner** (`frontend/src/services/itinerary.ts`)
+Highest-scoring matching events first, at most N a day, a 45-minute buffer between activities, no repeated category on
+the same day, and only events that pass the hard constraints.
+
+**Live sync** (`frontend/src/services/liveSync.ts`)
+Each save is diffed into put/delete operations by id and posted to Tandem Live; other devices receive them over
+Server-Sent Events. If the server is unreachable the app keeps working in the browser, then sends what changed while
+offline when it reconnects.
+</details>
+
+## Run it locally
+
+Requires Node 20 or later (tested on Node 22). No API keys, accounts or paid services are needed; the map loads
+OpenStreetMap tiles, so it needs internet.
 
 ```bash
-npm install      # from the repo root (installs frontend/ too) — or: cd frontend && npm install
+npm install      # from the repo root (also installs frontend/)
 npm run dev      # http://localhost:5173
 ```
 
-Other scripts (root or `frontend/`): `npm test` (Vitest), `npm run build` (type-check + production build),
-`npm run lint` (oxlint), `npm run preview`, `npm run e2e` and `npm run a11y` (see Testing).
+**Demo accounts** (simulated sign-in, no passwords). Choose one on the sign-in page:
 
-No API keys, accounts or paid services are needed. Map tiles come from OpenStreetMap, so the map needs internet.
+| Account | Persona | Try |
+|---|---|---|
+| **Alex Rivera** | New to Calgary, UCalgary student (NW) | Recommendations, join an event and chat, then *My events → Calgary Tech Coffee Meetup → Rate activity* |
+| **Sam Okafor** | Visiting from Toronto, travel mode on | *Explore Like a Local* and the Weekend Planner |
+| **Priya Sharma** | Organizer of Calgary Sunrise Runners | Hosting: edit or cancel events, post announcements in chat |
 
-### Live sync across devices (Tandem Live, optional)
+Seeded event dates are generated relative to the day you first open the app. *Settings → Your data → Reset demo data*
+starts a fresh world dated today.
 
-Run the small sync server next to the app and chat, RSVPs, ratings and new events update live on every connected
-laptop or phone. It is free, has no dependencies and stores the shared demo world in `server/data/tandem-live.json`.
+### Live sync across devices (optional)
 
 ```bash
-npm run live     # terminal 1: Tandem Live on http://localhost:8787 (also prints your network address)
-npm run dev      # terminal 2: the app; it connects to http://<same host>:8787 automatically
+npm run build && npm run live    # app + sync server on http://<this laptop's IP>:8787 for every device on the Wi-Fi
+docker compose up --build        # or the same thing in one container (data kept in a volume)
 ```
 
-Other laptops and phones on the same Wi-Fi: serve the built app from Tandem Live itself, so there is one address —
-`npm run build`, then `npm run live`, and everyone opens `http://<this laptop's network IP>:8787` (printed at
-startup). Or run everything in one container: `docker compose up --build` → port 8787 (the container serves the built
-app and the sync server, restarts automatically and keeps data in a volume). With the dev server instead, run
-`cd frontend && npm run dev -- --host` (from the repo root `--host` doesn't reach Vite).
+With `npm run dev`, also run `npm run live` in a second terminal; the app connects to port 8787 on the same host.
+If the server stops, the app falls back to browser-only mode and catches up when the server returns. The demo server
+has no authentication, so use it on a trusted network.
 
-**Fallback:** if the server isn't running or stops, the app keeps working in its normal browser-only mode (the chat
-badge shows *Live in this browser*). When the server comes back, the app reconnects, pushes changes made meanwhile
-and adopts the shared world. The first device to connect shares its demo world; *Reset demo data* resets it for
-everyone. Override the address with `VITE_SYNC_URL=http://host:port` or turn it off with `VITE_SYNC_URL=off`.
-There is no authentication on this demo server, so use it on a trusted network.
+<details>
+<summary><b>Shared workspace with Supabase</b></summary>
 
-### Shared workspace with Supabase
-
-1. Create a Supabase project and apply the [collaboration](supabase/migrations/20261107000000_collaboration.sql) and [activity ratings](supabase/migrations/20261107000100_activity_ratings.sql) migrations in order
-   using its SQL Editor or your migration runner. It creates the private collaboration tables, Data API functions
-   and the Realtime publication entry.
-2. Enable the Google provider in Supabase Auth and configure the Google OAuth client with the callback URL shown
-   by Supabase. In Supabase Auth URL Configuration, set your app's Site URL and allow its `/login` callback
-   including the optional `next` query string. [Supabase Google setup](https://supabase.com/docs/guides/auth/social-login/auth-google)
-3. Set these values in `frontend/.env.local` and restart Vite. Use the project's publishable key.
+1. Create a Supabase project and apply the [collaboration](supabase/migrations/20261107000000_collaboration.sql) and
+   [activity ratings](supabase/migrations/20261107000100_activity_ratings.sql) migrations in order.
+2. Enable the Google provider in Supabase Auth, configure the Google OAuth client with the callback URL Supabase shows,
+   and allow your app's `/login` callback in the Auth URL configuration.
+   ([Supabase Google setup](https://supabase.com/docs/guides/auth/social-login/auth-google))
+3. Add the project's URL and publishable key to `frontend/.env.local` and restart Vite:
    ```dotenv
    VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
    VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
    ```
-4. Sign in with Google, finish onboarding, then start a group or publish an event. Use a second Google account
-   in a separate browser profile to join and verify that RSVPs, event chat and group discussion update across clients.
+4. Sign in with Google in two browser profiles, join the same event and chat.
 
-The shared catalog starts empty. With the Supabase variables unset, Tandem runs its seeded single-browser demo.
-In shared mode, Google sign-in, events, RSVPs, self-reported attendance, group membership and chat use Supabase.
-Each chat shows its latest 100 messages. New activity ratings sync across the shared workspace. Reports, earlier browser-only reviews and most profile preferences stay in the browser.
+In shared mode, sign-in, events, RSVPs, attendance, group membership, chat and new ratings use Supabase; reports and
+most profile preferences stay in the browser. Database regression tests:
+`psql "$TANDEM_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/collaboration.sql`.
+</details>
 
-Run the database regression tests on a fresh test project after applying the migration:
+<details>
+<summary><b>Google sign-in for the browser-only demo</b></summary>
 
-```bash
-psql "$TANDEM_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/collaboration.sql
-```
+1. In the [Google Cloud console](https://console.cloud.google.com/), open **Google Auth Platform**, set the app name and
+   a support email, and choose audience **External**. While the app is in *Testing*, add your testers' Google accounts.
+2. **Clients → Create client → Web application**, with `http://localhost:5173` and `http://localhost` as authorised
+   JavaScript origins (add a deployed URL later). No redirect URI is needed.
+3. Put the client id in `frontend/.env.local` (see `frontend/.env.example`) and restart `npm run dev`:
+   `VITE_GOOGLE_CLIENT_ID=1234567890-abc123.apps.googleusercontent.com`
 
-### Google sign-in for the browser-only demo (optional)
-
-Real Google sign-in uses Google Identity Services — no backend and no passwords. New Google users get a Tandem
-profile created from their Google name, email and photo, then finish the usual profile setup; returning users go
-straight in. Without a client id the app still works with demo accounts and email sign-up.
-
-1. Open the [Google Cloud console](https://console.cloud.google.com/) and create (or pick) a project.
-2. Go to **Google Auth Platform** (older UI: *APIs & Services → OAuth consent screen*). Set the app name (Tandem), a
-   support email and audience **External**. While the app is in *Testing*, only the **test users** you add can sign in —
-   add your team's Google accounts, or publish the app (name/email/photo scopes don't need Google verification).
-3. **Clients → Create client → Web application.** Under *Authorised JavaScript origins* add `http://localhost:5173` and
-   `http://localhost` (plus your deployed URL later). No redirect URI is needed.
-4. Copy the client id into `frontend/.env.local` (template: `frontend/.env.example`):
-   ```bash
-   VITE_GOOGLE_CLIENT_ID=1234567890-abc123.apps.googleusercontent.com
-   ```
-5. Restart `npm run dev`. *Continue with Google* now appears on the sign-in and sign-up pages.
-
-If Vite starts on another port (e.g. 5174 because 5173 is busy), add that origin too or stop the other server.
-A web client id is public by design (it isn't a secret). This prototype checks the ID token's audience, issuer and
-expiry in the browser and never stores the token; a production deployment must verify it on a server.
-
-### Demo accounts (simulated sign-in — no passwords)
-
-| Account | Persona | Good for showing |
-|---|---|---|
-| **Alex Rivera** | New to Calgary, UCalgary student (NW) | Recommendations, joining, chat, confirming attendance → Miles, reviewing → leaderboard, hosting/editing an event |
-| **Sam Okafor** | Visiting from Toronto (travel mode on) | *Explore Like a Local* and the Weekend Planner |
-| **Priya Sharma** | Local organizer of Calgary Sunrise Runners | Host tools: edit/cancel events, announcements in chat |
-
-Use **Settings → Your data → Reset demo data** on the morning of a demo: seeded event dates are generated relative to
-the day you reset. Open a second tab signed in as another demo account to see the group chat update live.
-
-To try ratings immediately, continue as **Alex Rivera** and open **My events → Calgary Tech Coffee Meetup → Rate activity**.
-The meetup is already complete and Alex's attendance is confirmed.
-
-### 3–5 minute demo script (spec §27)
-
-1. **Problem** — a student just moved to Calgary and doesn't know where to start.
-2. **Profile setup** — create an account, select NW and a few interests, then choose *Find events* to see personalized suggestions.
-3. **Smart discovery** — *Discover*: drag the price slider, tick *Wheelchair accessible*; try the search box
-   “free hiking this weekend in NW” (or the mic).
-4. **Calgary map** — *Explore Calgary Map* → quadrant chip **NW** → click a marker → preview → Join.
-5. **Participation** — join *Bow River Sunrise Run* (count goes 12 → 13), open the group chat, see it on the dashboard.
-6. **Community creation** — *Create event* → *Use a template* → *Book club* → Publish → it's in Discover and on the map.
-7. **Accessibility** — toggle **Ease Into It** on Discover and watch smaller, beginner-friendly events rise; open the
-   ♿ menu (text size, contrast, readable font); press *Read aloud* on an event.
-8. **Traveller** — switch to **Sam** → *Explore Like a Local* → dates are prefilled → Weekend Planner → *Join all*.
-9. **Impact** — Alex's dashboard: *Confirm I attended* the past run (+15 Miles, milestones), leave a review, then the
-   **Leaderboard** and **Community impact** pages update live. Close with the line above.
-
----
-
-## What's inside
-
-| Area | Highlights |
-|---|---|
-| **Discovery** | Event cards with date, quadrant, price, capacity, host demo-verification, ratings and confirmed accessibility. Filters for price slider (0–$150+), free only, multi-category, quadrant, date presets + custom range, group size, 7 accessibility features, spaces available, verified host, traveller-friendly, indoor/outdoor. Seven sort orders. Plain-language + **voice** search ("quiet book club this weekend"). |
-| **Calgary map** | Leaflet + OpenStreetMap, quadrant overlay (NW/NE/SW/SE), category-icon markers (never colour-only), zoom-aware clustering, popups with Join, fit-to-events, list/map toggle. **Same filter state and logic as the list** (filters live in the URL). Private locations show an area circle, never a pin. |
-| **Events** | Single-page create/edit form with templates, optional details and an accessible error summary; public place picker or drop-a-pin; private/residential mode; First-Time Friendly details; tri-state accessibility (confirmed / not yet confirmed / not available); cancel with reason; .ics calendar export; share; read aloud. |
-| **Group chat** | Per-event, attendees + host only; host announcements; participants; leave event; report message; persisted; live across tabs in the same browser. Seeded messages are labelled *Demo message*. |
-| **Explore Like a Local** | Travel mode, travel dates, budget, quadrants → rule-based **Weekend Planner** (real events only, capacity/date/budget-aware, no overlaps), *Join all*, save to dashboard. |
-| **Groups** | 12 persistent community groups with organizers, guidelines, upcoming/past events, join/leave. |
-| **Reviews & leaderboard** | Only checked-in attendees can review, once; events never people. Fair Bayesian leaderboard; low-review events are labelled **New**. |
-| **Tandem Miles** | Participation score derived from attendance/hosting, six milestones, never ranked publicly. |
-| **Accessibility** | Comfort & Access preferences with must-haves, **Ease Into It**, text size, high contrast, reduced motion, Atkinson Hyperlegible font, underline links, read aloud, voice search, skip link, focus management, keyboard-operable map. |
-| **Privacy & trust** | No addresses, passwords, IDs or medical data stored; private-by-default preferences; live “as others see it” profile preview; simulated ID verification badge reads *Demo verified*; export / delete my data; confidential reporting. |
-| **Impact** | Community impact dashboard computed live (demo-labelled), with counters that move as you use the app. |
-
-Event and group cards and detail pages use Calgary photography from Wikimedia Commons. Detail pages show the location
-pictured, photographer, source and license. A labelled Calgary skyline photo appears where there is no matching
-venue or neighbourhood photo. WebP copies are bundled with the app.
-
----
-
-## Architecture
-
-```
-frontend/src
-├── types/        Domain model (User, CalgaryEvent, CommunityGroup, EventRegistration, EventReview, ChatMessage…)
-├── data/         Categories, accessibility features, Calgary geography (venues, neighbourhoods, quadrant lines), seed
-├── services/     PURE functions (db, now) → result: filters, recommendations, itinerary, leaderboard, reviews,
-│                 miles, events, registrations, chat, groups, users, impact, nlp (smart search), socials, storage
-├── state/        AppStore (React context: db + simulated session + actions), display prefs, toasts
-├── components/   ui kit, brand (logo), layout (shell/nav), events, filters, map (lazy-loaded Leaflet), profile…
-├── pages/        One file per route
-└── test/         Vitest specs for the services (spec §25 workflows)
-```
-
-- **Demo mode** uses pure services and a versioned localStorage document. The simulated session can differ by tab.
-  When the Tandem Live server (`server/live-server.mjs`) is reachable, `services/liveSync.ts` mirrors each change as
-  entity-level operations (put/delete by id) over HTTP and receives other devices' changes via Server-Sent Events.
-- **Shared mode** uses Supabase Auth and Postgres RPCs for collaboration. Realtime sends a revision update with no
-  message contents. Each client refreshes a snapshot scoped to its identity, event access and group memberships.
-  Postgres locks the event row when processing RSVPs or capacity changes.
-- **Stack:** React 19, TypeScript, Vite 8, Tailwind CSS v4, React Router 7, Leaflet + React-Leaflet 5, lucide-react,
-  Inter + Atkinson Hyperlegible (bundled), Vitest.
-
-## Algorithms
-
-### Recommendations (`services/recommendations.ts`)
-1. **Hard constraints first** — never recommend events that are cancelled, private, started, full, already joined or
-   hosted by you, over a budget you marked as strict, outside traveller dates, or missing an accessibility feature you
-   marked as a **must-have** (confirmed by the organizer).
-2. **Weighted score** — interest 35% · date & availability 20% · location 15% · accessibility & comfort 15% ·
-   budget 10% · beginner-friendly 5%. Related interests count partially (e.g. hiking ↔ photography).
-3. **Ease Into It** — blends in a comfort score (small group, beginner-friendly, arrival instructions, calm setting,
-   clear description): `final = 0.6 × base + 0.4 × ease`.
-4. **Explanation** — every recommendation says why: *“Recommended because you enjoy running and prefer free,
-   beginner-friendly activities.”* — and the event page shows the per-factor breakdown.
-
-### Fair leaderboard (`services/leaderboard.ts`)
-Activities (recurring series or one-off events) with completed sessions are scored out of 100:
-`0.55 × Bayesian rating + 0.20 × participation-vs-capacity + 0.15 × completion + 0.10 × review confidence`, where
-`Bayesian = (C·m + Σratings)/(C + n)` with the city-wide mean `m` and `C = 5`, and `confidence = n/(n + C)`.
-Fewer than 3 reviews → listed as **New**, not ranked. Filters: category, quadrant, date range, free/paid, accessibility.
-
-### Tandem Miles (`services/miles.ts`)
-Attend a confirmed event +10 · host an event that takes place +15 · first event in a new interest +5 · volunteer +10.
-Derived from data (each registration can be checked in once), so repeated check-ins can't farm points.
-
-### Weekend Planner (`services/itinerary.ts`)
-Greedy, transparent: highest-scoring interest-matching events first, ≤ N per day, 45-minute buffer between
-activities, no repeated category on the same day, only events that pass the hard constraints above.
-
----
+A web client id is public by design. This prototype checks the ID token in the browser; production should verify it on
+a server.
+</details>
 
 ## Testing
 
-- `npm test` — 44 Vitest specs covering the spec §25 workflows at the service level (onboarding, recommendations,
-  filters, price, map markers, create/join/leave, capacity, dashboard, chat persistence, milestones, reviews,
-  leaderboard, accessibility filters, traveller dates), seed-data integrity and calendar export.
-- `npm run e2e` — with the dev server running, drives your installed Google Chrome (headless, via the DevTools
-  Protocol — no Playwright download) through all 20 workflows end to end, including a 390 px mobile viewport.
-- `npm run a11y` — runs axe-core (WCAG 2.0/2.1/2.2 A + AA and best practices) on 18 pages; currently 0 violations.
-- `npm run e2e:live` — two Chrome instances (Alex and Sam) synced through a test Tandem Live server: RSVP and chat
-  arrive on the other device without a reload, the app falls back when the server stops, and catches up on restart.
-- `npm run test:live` (repo root) — server test: broadcast between devices, input validation, persistence on restart.
+| Command | What it checks | Result |
+|---|---|---|
+| `npm test` | 44 Vitest specs: onboarding, recommendations, filters, map markers, joining and capacity, chat, Miles, reviews, leaderboard, traveller dates, live-sync merging | all pass |
+| `npm run e2e` | Real Chrome (headless, DevTools Protocol) through all 20 core workflows, including a 390 px phone viewport | 17/17 checks |
+| `npm run a11y` | axe-core WCAG 2.0/2.1/2.2 A and AA plus best practices on 18 pages | 0 violations |
+| `npm run e2e:live` | Two browsers synced through a test Tandem Live server: RSVPs and chat arrive without a reload; the app falls back when the server stops and catches up on restart | 6/6 |
+| `npm run test:live` | Sync server: broadcast between devices, input validation, persistence across restarts | pass |
 
-Set `CHROME_PATH` / `BASE_URL` to point the browser checks elsewhere.
+`e2e`, `a11y` and `e2e:live` need the dev server running. Set `CHROME_PATH` or `BASE_URL` to point them elsewhere.
 
-## Demo limitations & production improvements
+## Project structure
 
-| Prototype | Production |
+```
+frontend/            React app (Vite)
+  src/services/      pure, tested logic: recommendations, filters, nlp, itinerary, leaderboard, miles, liveSync…
+  src/pages/         one file per route
+  src/components/    UI kit, brand, layout, events, filters, map
+  src/data/          Calgary geography, categories, accessibility features, seed data
+  scripts/e2e/       headless-Chrome end-to-end and accessibility checks
+server/              Tandem Live sync server (Node.js, no dependencies) and its tests
+supabase/            migrations and SQL tests for the shared workspace
+demo-video/          how the demo videos are made: capture real screens, animate, render with ffmpeg
+docs/                README images and the hackathon brief
+```
+
+## Limitations and what's next
+
+| Today (prototype) | Next |
 |---|---|
-| Browser-only demo stores collaboration in one browser profile; Tandem Live syncs devices on a trusted network without accounts | Enable the Supabase shared workspace above (real auth, row-level security) |
-| Google sign-in checked in the browser; demo/email sign-in simulated (no passwords stored) | Server-side ID-token verification (or a managed auth provider) and MFA |
-| *Demo verified* badge, no documents collected | Certified third-party ID verification returning only pass/fail |
-| Self-reported attendance confirmation | Host-confirmed QR check-in |
-| Reports stored locally | Moderation queue, response SLAs, rate limiting |
-| Seeded fictional events at real public venues; approximate coordinates and quadrant lines | Partnerships with community associations, libraries and newcomer organisations; live event imports |
+| Browser-only demo, or Tandem Live on a trusted network without accounts | Supabase shared workspace with real accounts and row-level security (already built, needs hosting) |
+| Google sign-in checked in the browser; email and demo sign-in are simulated | Server-side token verification and multi-factor sign-in |
+| *Demo verified* badge; no documents are collected | A certified ID provider that returns only pass or fail |
+| Attendance is self-reported | Host-confirmed QR check-in |
+| Reports are stored locally | A moderation queue with response times and rate limiting |
+| Fictional events at real public venues, with approximate coordinates and quadrant lines | Events from community associations, libraries and newcomer organisations |
 
-## Credits
+## Team and credits
 
-Map data © OpenStreetMap contributors · Leaflet · lucide icons · Inter (Rasmus Andersson) · Atkinson Hyperlegible
-(Braille Institute). Built in Mohkinstsis (Calgary), on Treaty 7 territory.
+**LeGroup**: Falah Sheikh and Hunter Halvorson, for Code the Change 2026 in Calgary.
 
-## Demo video
-
-`demo-video/tandem-demo.mp4` is a silent 60-second walkthrough (sign-up → filters → map → join → live chat →
-rating → accessibility). It is rendered from real app screens: `node demo-video/capture.mjs` (dev server running)
-records them, then `node demo-video/render.mjs` animates `demo-video/demo.html` frame by frame into the MP4
-(needs ffmpeg).
+Map data © OpenStreetMap contributors · Leaflet · lucide icons · Inter (Rasmus Andersson) · Atkinson Hyperlegible Next
+(Braille Institute) · Calgary photography from Wikimedia Commons (credits on each page). Built in Mohkinstsis (Calgary),
+on Treaty 7 territory.

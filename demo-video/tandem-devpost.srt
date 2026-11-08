@@ -1,0 +1,163 @@
+1
+00:00:00,500 --> 00:00:05,917
+Falah: Calgary has something on every night. The hard part isn’t finding an event.
+
+2
+00:00:05,917 --> 00:00:07,583
+It’s walking in alone.
+
+3
+00:00:08,000 --> 00:00:11,750
+Hunter: Nearly one in four young Canadians often feels lonely.
+
+4
+00:00:11,750 --> 00:00:15,500
+More than one in four lives with a disability.
+
+5
+00:00:15,500 --> 00:00:20,083
+And Calgary is growing faster than it has in forty years.
+
+6
+00:00:21,400 --> 00:00:26,400
+Falah: Tandem is a group-first way to find people to do things with.
+
+7
+00:00:26,400 --> 00:00:30,983
+No follower counts, no feeds, and we rate events, never people.
+
+8
+00:00:33,200 --> 00:00:38,200
+Hunter: Meet Riley: visiting Calgary for ten days, and anxious in big groups.
+
+9
+00:00:39,200 --> 00:00:45,033
+Falah: Sign-up is one tap with Google, and choosing “Visiting Calgary” turns on travel mode.
+
+10
+00:00:45,600 --> 00:00:47,683
+Hunter: Riley picks a few interests.
+
+11
+00:00:48,200 --> 00:00:53,617
+Falah: Comfort needs stay private, and they’re never medical labels: small groups, quiet, beginner-friendly.
+
+12
+00:00:54,100 --> 00:00:59,517
+Hunter: And Ease Into It moves low-pressure events to the top of every list.
+
+13
+00:01:00,400 --> 00:01:05,400
+Falah: Now Riley just types what they want, or says it out loud.
+
+14
+00:01:05,700 --> 00:01:12,783
+Hunter: Our parser turns plain words into real filters, and accessibility filters only count what organizers have confirmed.
+
+15
+00:01:13,100 --> 00:01:16,433
+Falah: And every result explains why it was picked.
+
+16
+00:01:17,200 --> 00:01:23,867
+Hunter: The map runs on the exact same filters, so the list and the map always agree.
+
+17
+00:01:23,867 --> 00:01:28,450
+Tap a pin, and you can join right from the map.
+
+18
+00:01:29,300 --> 00:01:35,550
+Falah: Riley can see exactly how this match was scored: interests, timing, distance, access and budget.
+
+19
+00:01:35,550 --> 00:01:37,633
+It’s rule-based, with no tracking.
+
+20
+00:01:38,700 --> 00:01:40,783
+Hunter: One tap, and Riley’s going.
+
+21
+00:01:40,783 --> 00:01:48,700
+The page says what to expect, that it’s First-Time Friendly, and which access features the host has actually confirmed.
+
+22
+00:01:50,200 --> 00:01:56,033
+Falah: Joining unlocks the group chat, so Riley can say hi before ever walking in.
+
+23
+00:01:56,800 --> 00:02:00,133
+Hunter: And that reply came from the host’s phone.
+
+24
+00:02:00,133 --> 00:02:07,217
+Our Tandem Live server streams each change to every device in about a tenth of a second.
+
+25
+00:02:08,000 --> 00:02:11,750
+Falah: If the server goes down, Riley can keep chatting.
+
+26
+00:02:11,750 --> 00:02:16,750
+Messages are saved on the device and delivered once the server’s back.
+
+27
+00:02:19,300 --> 00:02:25,967
+Hunter: Because Riley’s visiting, Explore Like a Local plans the weekend around their interests and comfort settings.
+
+28
+00:02:25,967 --> 00:02:28,467
+One tap joins the whole plan.
+
+29
+00:02:29,800 --> 00:02:37,300
+Falah: After the book club, Riley confirms they went, and earns Tandem Miles for showing up, not for popularity.
+
+30
+00:02:37,600 --> 00:02:40,933
+Falah: Then Riley rates the event. Never the people.
+
+31
+00:02:41,300 --> 00:02:49,217
+Hunter: The leaderboard uses a Bayesian average, so a handful of five-star reviews can’t outrank an event that’s consistently great.
+
+32
+00:02:50,000 --> 00:02:54,583
+Falah: Here’s the bigger picture: accessibility isn’t hidden in a settings page.
+
+33
+00:02:54,583 --> 00:03:00,833
+Bigger text, a font designed for low vision, and high contrast change every screen instantly.
+
+34
+00:03:00,833 --> 00:03:03,750
+And any page can be read aloud.
+
+35
+00:03:05,800 --> 00:03:11,633
+Hunter: Riley decides who sees what, and can download or delete their data any time.
+
+36
+00:03:11,633 --> 00:03:14,967
+Passwords, IDs and medical details are never stored.
+
+37
+00:03:16,600 --> 00:03:22,433
+Hunter: Under the hood: React 19 and TypeScript, with every rule a pure, tested function.
+
+38
+00:03:22,433 --> 00:03:29,100
+Live sync is our own Node server in Docker, and Supabase is ready for city scale.
+
+39
+00:03:30,300 --> 00:03:36,967
+Falah: Every core workflow is tested end to end, with zero automated accessibility violations across 18 pages.
+
+40
+00:03:38,100 --> 00:03:41,433
+Falah: Tandem doesn’t measure how many people follow you.
+
+41
+00:03:41,600 --> 00:03:45,350
+Hunter: It helps you find people to go somewhere with.
