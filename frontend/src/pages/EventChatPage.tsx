@@ -16,6 +16,7 @@ import { useApp } from '../state/AppStore'
 import { useDisplay } from '../state/display'
 import { useToast } from '../state/toast'
 import type { CalgaryEvent, ChatMessage } from '../types'
+import { useLiveSync } from '../services/liveSync'
 
 export default function EventChatPage() {
   const { id } = useParams()
@@ -41,6 +42,7 @@ export default function EventChatPage() {
 
 function Chat({ event }: { event: CalgaryEvent }) {
   const { db, user, now, actions, shared } = useApp()
+  const live = useLiveSync()
   const { reducedMotion } = useDisplay()
   const { toast } = useToast()
   const [body, setBody] = useState('')
@@ -105,9 +107,15 @@ function Chat({ event }: { event: CalgaryEvent }) {
                 {formatEventRange(event.startsAt, event.endsAt, now)} · {pluralize(registeredCount(db, event) + 1, 'person', 'people')}
               </p>
             </div>
-            <Badge tone="success" className="max-sm:hidden" title="Messages sync live between tabs in this browser. They are stored locally — this is a single-browser demo.">
-              <Radio aria-hidden /> Live in this browser
-            </Badge>
+            {!shared && live.status === 'live' ? (
+              <Badge tone="success" className="max-sm:hidden" title="Messages sync instantly between devices through the Tandem Live server.">
+                <Radio aria-hidden /> Live · {pluralize(live.devices, 'device')}
+              </Badge>
+            ) : (
+              <Badge tone="success" className="max-sm:hidden" title="Messages sync live between tabs in this browser. Start the Tandem Live server to sync devices.">
+                <Radio aria-hidden /> Live in this browser
+              </Badge>
+            )}
           </div>
 
           {pinned.length > 0 && (
@@ -227,7 +235,8 @@ function Chat({ event }: { event: CalgaryEvent }) {
             )}
             <p className="px-1 text-xs text-muted">
               {shared ? 'Messages sync with the host and attendees. The latest 100 messages are shown.'
-                : 'Single-browser demo: open this chat in another tab as a different demo account to see live updates.'}
+                : live.status === 'live' ? 'Synced through the Tandem Live server: messages appear instantly on every connected device.'
+                : 'Browser-only mode: open this chat in another tab as a different demo account to see live updates, or start the Tandem Live server to sync devices.'}
             </p>
           </div>
         </aside>

@@ -1,0 +1,9 @@
+**/node_modules
+**/.DS_Store
+.git
+frontend/dist
+frontend/scripts/e2e/.out
+server/data
+demo-video
+supabase
+*.pdf

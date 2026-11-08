@@ -1,13 +1,13 @@
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { launch } from './cdp.mjs'
+import { launch, SYNC_OFF } from './cdp.mjs'
 /**
  * End-to-end check of the 20 workflows in spec §25. Start the dev server first (npm run dev), then: npm run e2e
  * Uses a throwaway Chrome profile, so it starts from freshly seeded demo data. Screenshots go to scripts/e2e/.out/
  */
 const SP = join(import.meta.dirname, '.out')
-const b = await launch({ profile: mkdtempSync(join(tmpdir(), 'tandem-e2e-')) })
+const b = await launch({ profile: mkdtempSync(join(tmpdir(), 'tandem-e2e-')), init: SYNC_OFF })
 const H = `
 window.$q = (s) => document.querySelector(s);
 window.$all = (s) => [...document.querySelectorAll(s)];

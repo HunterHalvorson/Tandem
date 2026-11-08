@@ -14,6 +14,7 @@ import { useApp } from '../state/AppStore'
 import { useDisplay } from '../state/display'
 import { useToast } from '../state/toast'
 import type { Verification } from '../types'
+import { useLiveSync } from '../services/liveSync'
 
 const SECTIONS = [
   ['privacy', 'Privacy'],
@@ -27,6 +28,7 @@ const SECTIONS = [
 export default function SettingsPage() {
   usePageTitle('Privacy & accessibility settings')
   const { user, now, actions, shared } = useApp()
+  const live = useLiveSync()
   const [savingPrivacy, setSavingPrivacy] = useState(false)
   const { prefs, update } = useDisplay()
   const { toast } = useToast()
@@ -46,7 +48,7 @@ export default function SettingsPage() {
   return (
     <Container className="py-8">
       <h1 className="text-3xl font-extrabold text-ink sm:text-4xl">Privacy & accessibility</h1>
-      <p className="mt-1 text-muted">{shared ? "Changes save automatically. Your display name and attendance visibility sync across the shared workspace." : "Changes save automatically and live only in this browser."}</p>
+      <p className="mt-1 text-muted">{shared ? "Changes save automatically. Your display name and attendance visibility sync across the shared workspace." : live.status === 'live' ? "Changes save automatically in this browser and sync to the local Tandem Live server." : "Changes save automatically and live only in this browser."}</p>
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
         <nav aria-label="Settings sections" className="lg:sticky lg:top-20 lg:self-start">
           <ul className="flex gap-1 overflow-x-auto lg:flex-col">
@@ -138,7 +140,7 @@ export default function SettingsPage() {
             <VerificationFlow />
           </SettingsCard>
 
-          <SettingsCard id="data" title="Your data" description={shared ? "Collaboration data is shared through Supabase. Your profile preferences, earlier browser-only reviews and reports are stored in this browser." : `Everything ${BRAND.name} knows about you lives in this browser’s local storage.`}>
+          <SettingsCard id="data" title="Your data" description={shared ? "Collaboration data is shared through Supabase. Your profile preferences, earlier browser-only reviews and reports are stored in this browser." : live.status === 'live' ? `Everything ${BRAND.name} knows about you is stored in this browser and synced to the local Tandem Live server (${live.url}).` : `Everything ${BRAND.name} knows about you lives in this browser’s local storage.`}>
             <p className="mb-4 rounded-lg bg-mist px-3 py-2 text-sm text-ink-soft">
               <strong className="text-ink">Signed in with:</strong>{' '}
               {user.authProvider === 'google' ? `Google (${user.email})` : user.isDemo ? 'Demo account (simulated sign-in)' : `Email — ${user.email} (simulated sign-in)`}

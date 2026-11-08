@@ -27,6 +27,26 @@ Other scripts (root or `frontend/`): `npm test` (Vitest), `npm run build` (type-
 
 No API keys, accounts or paid services are needed. Map tiles come from OpenStreetMap, so the map needs internet.
 
+### Live sync across devices (Tandem Live, optional)
+
+Run the small sync server next to the app and chat, RSVPs, ratings and new events update live on every connected
+laptop or phone. It is free, has no dependencies and stores the shared demo world in `server/data/tandem-live.json`.
+
+```bash
+npm run live     # terminal 1: Tandem Live on http://localhost:8787 (also prints your network address)
+npm run dev      # terminal 2: the app; it connects to http://<same host>:8787 automatically
+```
+
+Phones on the same Wi-Fi: start the app with `npm run dev -- --host` and open the printed network URL.
+Or run everything in one container: `docker compose up --build` → http://localhost:8787 (the container serves the
+built app and the sync server, restarts automatically and keeps data in a volume).
+
+**Fallback:** if the server isn't running or stops, the app keeps working in its normal browser-only mode (the chat
+badge shows *Live in this browser*). When the server comes back, the app reconnects, pushes changes made meanwhile
+and adopts the shared world. The first device to connect shares its demo world; *Reset demo data* resets it for
+everyone. Override the address with `VITE_SYNC_URL=http://host:port` or turn it off with `VITE_SYNC_URL=off`.
+There is no authentication on this demo server, so use it on a trusted network.
+
 ### Shared workspace with Supabase
 
 1. Create a Supabase project and apply the [collaboration](supabase/migrations/20261107000000_collaboration.sql) and [activity ratings](supabase/migrations/20261107000100_activity_ratings.sql) migrations in order
@@ -143,6 +163,8 @@ frontend/src
 ```
 
 - **Demo mode** uses pure services and a versioned localStorage document. The simulated session can differ by tab.
+  When the Tandem Live server (`server/live-server.mjs`) is reachable, `services/liveSync.ts` mirrors each change as
+  entity-level operations (put/delete by id) over HTTP and receives other devices' changes via Server-Sent Events.
 - **Shared mode** uses Supabase Auth and Postgres RPCs for collaboration. Realtime sends a revision update with no
   message contents. Each client refreshes a snapshot scoped to its identity, event access and group memberships.
   Postgres locks the event row when processing RSVPs or capacity changes.
@@ -180,12 +202,15 @@ activities, no repeated category on the same day, only events that pass the hard
 
 ## Testing
 
-- `npm test` — 33 Vitest specs covering the spec §25 workflows at the service level (onboarding, recommendations,
+- `npm test` — 44 Vitest specs covering the spec §25 workflows at the service level (onboarding, recommendations,
   filters, price, map markers, create/join/leave, capacity, dashboard, chat persistence, milestones, reviews,
   leaderboard, accessibility filters, traveller dates), seed-data integrity and calendar export.
 - `npm run e2e` — with the dev server running, drives your installed Google Chrome (headless, via the DevTools
   Protocol — no Playwright download) through all 20 workflows end to end, including a 390 px mobile viewport.
 - `npm run a11y` — runs axe-core (WCAG 2.0/2.1/2.2 A + AA and best practices) on 18 pages; currently 0 violations.
+- `npm run e2e:live` — two Chrome instances (Alex and Sam) synced through a test Tandem Live server: RSVP and chat
+  arrive on the other device without a reload, the app falls back when the server stops, and catches up on restart.
+- `npm run test:live` (repo root) — server test: broadcast between devices, input validation, persistence on restart.
 
 Set `CHROME_PATH` / `BASE_URL` to point the browser checks elsewhere.
 
@@ -193,7 +218,7 @@ Set `CHROME_PATH` / `BASE_URL` to point the browser checks elsewhere.
 
 | Prototype | Production |
 |---|---|
-| Browser-only demo stores collaboration in one browser profile | Enable the Supabase shared workspace above |
+| Browser-only demo stores collaboration in one browser profile; Tandem Live syncs devices on a trusted network without accounts | Enable the Supabase shared workspace above (real auth, row-level security) |
 | Google sign-in checked in the browser; demo/email sign-in simulated (no passwords stored) | Server-side ID-token verification (or a managed auth provider) and MFA |
 | *Demo verified* badge, no documents collected | Certified third-party ID verification returning only pass/fail |
 | Self-reported attendance confirmation | Host-confirmed QR check-in |
@@ -204,3 +229,10 @@ Set `CHROME_PATH` / `BASE_URL` to point the browser checks elsewhere.
 
 Map data © OpenStreetMap contributors · Leaflet · lucide icons · Inter (Rasmus Andersson) · Atkinson Hyperlegible
 (Braille Institute). Built in Mohkinstsis (Calgary), on Treaty 7 territory.
+
+## Demo video
+
+`demo-video/tandem-demo.mp4` is a silent 40-second walkthrough (sign-up → filters → map → join → live chat →
+rating → accessibility). It is rendered from real app screens: `node demo-video/capture.mjs` (dev server running)
+records them, then `node demo-video/render.mjs` animates `demo-video/demo.html` frame by frame into the MP4
+(needs ffmpeg).

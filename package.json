@@ -10,6 +10,9 @@
     "lint": "npm --prefix frontend run lint",
     "preview": "npm --prefix frontend run preview",
     "e2e": "npm --prefix frontend run e2e",
-    "a11y": "npm --prefix frontend run a11y"
+    "a11y": "npm --prefix frontend run a11y",
+    "live": "node server/live-server.mjs",
+    "test:live": "node --test server/live-server.test.mjs",
+    "e2e:live": "npm --prefix frontend run e2e:live"
   }
 }

@@ -21,7 +21,8 @@ import {
 } from '../services/users'
 import { displayName } from '../lib/format'
 import { googleDisableAutoSelect } from '../lib/googleIdentity'
-import { loadOrSeed, loadSessionUserId, localStorageAdapter, saveSessionUserId, sharedPreferencesAdapter, type StorageAdapter } from '../services/storage'
+import { loadOrSeed, loadSessionUserId, saveSessionUserId, sharedPreferencesAdapter, type StorageAdapter } from '../services/storage'
+import { defaultBrowserAdapter } from '../services/liveSync'
 import { sharedRpc, supabase } from '../services/supabase'
 import type { CalgaryEvent, CategoryId, Database, GroupMessage, Quadrant, Report, ReportReason, User, Verification } from '../types'
 import { useToast } from './toast'
@@ -72,7 +73,7 @@ const AppContext = createContext<AppContextValue | null>(null)
 
 const shared = !!supabase
 
-export function AppStoreProvider({ children, adapter = shared ? sharedPreferencesAdapter : localStorageAdapter }: { children: ReactNode; adapter?: StorageAdapter }) {
+export function AppStoreProvider({ children, adapter = shared ? sharedPreferencesAdapter : defaultBrowserAdapter() }: { children: ReactNode; adapter?: StorageAdapter }) {
   const { toast } = useToast()
   const eventRoute = useMatch('/events/:id/*')
   const linkedEvent = eventRoute?.params.id === 'new' ? null : eventRoute?.params.id ?? null
@@ -124,7 +125,7 @@ export function AppStoreProvider({ children, adapter = shared ? sharedPreference
     return () => clearInterval(id)
   }, [])
 
-  // Cross-tab sync within this browser.
+  // Cross-tab sync within this browser, and across devices when the Tandem Live server is reachable.
   useEffect(
     () =>
       adapter.subscribe((next) => {

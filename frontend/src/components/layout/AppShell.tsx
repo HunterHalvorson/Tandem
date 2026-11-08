@@ -33,6 +33,7 @@ import { VerificationBadge } from '../events/EventBits'
 import { Dialog } from '../ui/Dialog'
 import { Avatar, ButtonLink, Segmented, Switch } from '../ui/primitives'
 import { PageSkeleton } from './PageSkeleton'
+import { useLiveSync } from '../../services/liveSync'
 
 const NAV = [
   { to: '/discover', label: 'Events', icon: Compass },
@@ -94,6 +95,7 @@ export function AppShell() {
 /* ------------------------------------------------------------------ banners */
 
 function Banners() {
+  const live = useLiveSync()
   const { db, now, actions, shared, sharedOffline } = useApp()
   const { toast } = useToast()
   const [dismissed, setDismissed] = useState(isBannerDismissed)
@@ -124,7 +126,7 @@ function Banners() {
           <Info aria-hidden className="mr-1.5 inline size-4 align-[-3px]" />
           {shared
             ? 'Shared workspace: events, attendance and discussions sync through Supabase. ID verification is simulated.'
-            : <>Hackathon prototype: demo accounts and ID verification are <strong className="text-white">simulated</strong>, data lives only in this browser, and seeded events are fictional.</>}{' '}
+            : <>Hackathon prototype: demo accounts and ID verification are <strong className="text-white">simulated</strong>, {live.status === 'live' ? 'data syncs between devices through the local Tandem Live server' : 'data lives only in this browser'}, and seeded events are fictional.</>}{' '}
           <Link to="/about" className="font-semibold text-white underline underline-offset-2">
             About this demo
           </Link>

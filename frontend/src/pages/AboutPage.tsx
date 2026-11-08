@@ -5,10 +5,12 @@ import { ButtonLink, Card, Container } from '../components/ui/primitives'
 import { BRAND, MILES_NAME } from '../lib/brand'
 import { usePageTitle } from '../lib/hooks'
 import { useApp } from '../state/AppStore'
+import { useLiveSync } from '../services/liveSync'
 
 export default function AboutPage() {
   usePageTitle('About Tandem')
   const { shared } = useApp()
+  const live = useLiveSync()
   return (
     <Container className="max-w-4xl py-10">
       <LogoMark className="h-12 w-auto" motion />
@@ -47,7 +49,9 @@ export default function AboutPage() {
               items={[
                 ...(shared ? ['Reports and most profile preferences stay in this browser'] : [
                   'Demo accounts and email sign-in are simulated. Google sign-in is available when configured',
-                  'Demo data and live chat sync between tabs in this browser',
+                  live.status === 'live'
+                    ? 'Demo data and live chat sync between devices through the local Tandem Live server (no accounts or passwords on it)'
+                    : 'Demo data and live chat sync between tabs in this browser (start the Tandem Live server to sync devices)',
                   'Seeded events, members, reviews and messages are fictional',
                 ]),
                 'ID verification: a clearly labelled “Demo verified” badge; no documents are collected',

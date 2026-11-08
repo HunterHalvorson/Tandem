@@ -7,8 +7,11 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 export const BASE = process.env.BASE_URL ?? 'http://localhost:5173'
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+// Isolated from any running Tandem Live server: these checks expect a freshly seeded browser-only world.
+export const SYNC_OFF = "try { localStorage.setItem('tandem.sync', 'off') } catch {}"
 
-export async function launch({ port = 9333, width = 1440, height = 1000, profile, mobile = false } = {}) {
+/** `init`: script run before any page script on every navigation (e.g. to set localStorage flags). */
+export async function launch({ port = 9333, width = 1440, height = 1000, profile, mobile = false, init } = {}) {
   const proc = spawn(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' })
   let targets
   for (let i = 0; i < 50; i++) {
@@ -37,6 +40,7 @@ export async function launch({ port = 9333, width = 1440, height = 1000, profile
     if (m.method === 'Runtime.exceptionThrown') logs.push(`[exception] ${m.params.exceptionDetails.exception?.description ?? m.params.exceptionDetails.text}`)
   })
   await send('Page.enable'); await send('Runtime.enable')
+  if (init) await send('Page.addScriptToEvaluateOnNewDocument', { source: init })
   const setViewport = (w, h, isMobile = false) => send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: isMobile })
   await setViewport(width, height, mobile)
   const api = {

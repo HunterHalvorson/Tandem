@@ -4,8 +4,9 @@
  * Swapping to a real backend means replacing this adapter (and making the service calls async) —
  * components never read or write storage themselves.
  *
- * localStorage is per-browser-profile: it is NOT shared between people or devices. We use the
- * `storage` event so several tabs in the same browser stay in sync (the honest "live" demo).
+ * localStorage is per-browser-profile: on its own it is NOT shared between people or devices. We use the
+ * `storage` event so several tabs in the same browser stay in sync, and services/liveSync.ts optionally mirrors
+ * changes through the Tandem Live server (server/live-server.mjs) so several devices stay in sync.
  */
 import { createSeedDatabase, DB_VERSION, RATING_DEMO_EVENT_ID } from '../data/seed'
 import type { Database } from '../types'
@@ -29,6 +30,8 @@ export function removeLegacyKeys(): void {
 }
 
 export interface StorageAdapter {
+  /** True for adapters backed by this browser's localStorage. */
+  persistsInBrowser?: boolean
   load(): Database | null
   save(db: Database): { ok: true } | { ok: false; error: string }
   clear(): void
@@ -36,7 +39,7 @@ export interface StorageAdapter {
   subscribe(onChange: (db: Database | null) => void): () => void
 }
 
-function isDatabase(value: unknown): value is Database {
+export function isDatabase(value: unknown): value is Database {
   if (!value || typeof value !== 'object') return false
   const v = value as Partial<Database>
   return (
@@ -63,6 +66,7 @@ function safeParse(raw: string | null): unknown {
 
 function browserAdapter(key: string): StorageAdapter {
   return {
+    persistsInBrowser: true,
     load() {
       try {
         const parsed = safeParse(localStorage.getItem(key))
@@ -119,7 +123,7 @@ export function createMemoryAdapter(initial: Database | null = null): StorageAda
 }
 
 export function loadOrSeed(adapter: StorageAdapter, now = new Date()): Database {
-  if (adapter === localStorageAdapter) removeLegacyKeys()
+  if (adapter.persistsInBrowser) removeLegacyKeys()
   const existing = adapter.load()
   if (existing) {
     if (existing.events.some((event) => event.id === RATING_DEMO_EVENT_ID)

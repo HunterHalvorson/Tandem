@@ -63,7 +63,11 @@ npm run build      # tsc -b && vite build
 npm run lint       # oxlint
 npm run e2e        # (dev server running) headless-Chrome check of the 20 spec §25 workflows
 npm run a11y       # (dev server running) axe-core WCAG 2.2 AA audit of 18 pages
+npm run e2e:live   # (dev server running) two Chromes synced through a test Tandem Live server, incl. fallback
 ```
+Live multi-device sync (optional): `npm run live` (repo root, port 8787) next to `npm run dev`, or
+`docker compose up --build` (serves the built app + sync on :8787). `npm run test:live` tests the server.
+Demo video: `node demo-video/capture.mjs` (dev server running) then `node demo-video/render.mjs` → `demo-video/tandem-demo.mp4`.
 E2E/a11y scripts live in `frontend/scripts/e2e/` (plain Chrome DevTools Protocol, no Playwright). Override the browser
 with `CHROME_PATH=...` and the target with `BASE_URL=...`.
 (Root `package.json` proxies `npm install` / `npm run dev` / `npm test` / `npm run build` into `frontend/`.)
@@ -83,6 +87,11 @@ test/       vitest specs for services
 ```
 - **Data flow:** UI → `useApp()` actions → service function `(db, args) → newDb` → `storage.save()` → React state.
   Components never touch localStorage directly (only `services/storage.ts` does).
+- **Tandem Live:** `services/liveSync.ts` wraps the localStorage adapter (default in non-Supabase mode). If
+  `server/live-server.mjs` is reachable (URL: localStorage `tandem.sync` → `VITE_SYNC_URL` → same origin when served
+  by the server → `http://<host>:8787`), each save is diffed into entity ops (put/del/set by id) and POSTed; other
+  devices' ops arrive over SSE. Server down → browser-only mode; reconnect pushes unsynced changes. e2e/a11y scripts
+  set `tandem.sync=off` so they always start from a fresh seed.
 - **Storage keys:** `tandem.db.v1` (whole demo DB), `tandem.session` (+ per-tab sessionStorage override so two tabs
   can be two different demo users → live cross-tab chat), `tandem.display` (text size / motion / contrast / font).
 - **Map ↔ list sync:** both views use the same `filterEvents()` + filters serialized in the URL query string.
@@ -113,6 +122,18 @@ test/       vitest specs for services
 8. **2026-11-07** — Let attendees give an activity a rating of up to five stars.
 
 9. **2026-11-07** — Add a completed demo activity that can be rated and merge the collaboration branch into main.
+
+10. **2026-11-07** — "create a demo video … under 30 seconds": sign-up (Google, interests, accessibility needs) →
+    filtering + map → joining + chat with event info/tags/accessibility → rating → the "bigger picture" (dynamic
+    accessibility for all Calgarians). Persona: someone visiting Calgary with social anxiety. Animated in our design
+    language with tech-stack info. (User also pasted the judging criteria for context.)
+
+11. **2026-11-07** — Make chat/live updates real with a free local server that won't crash, with a default fallback
+    when it doesn't work ("like with docker … so we can say it in the demo"). Video is silent (team talks over it),
+    no speech/narration text; it's one part of the presentation, so no title/closing slides.
+
+12. **2026-11-07** — "seems too quick, could we slow it down so that the info is easier to read … but not too much"
+    → retimed the video from 29 s to 40 s (each callout ≥ ~1 s, short pauses between steps).
 
 ## 8. Change log
 
@@ -171,6 +192,17 @@ test/       vitest specs for services
 - **2026-11-07** — Added Calgary Tech Coffee Meetup as a completed, unrated activity with Alex already checked in.
   Existing demo databases get the fixture without a reset.
 
+- **2026-11-07 (session 2)** — Added **Tandem Live**: zero-dependency Node sync server (`server/live-server.mjs`:
+  SSE + entity ops, atomic JSON persistence, validation, serves `frontend/dist`), client adapter
+  (`services/liveSync.ts`) with automatic fallback/reconnect, status-aware UI copy (chat badge "Live · N devices",
+  banner, settings, about), `Dockerfile` + `docker-compose.yml`, tests (5 new vitest specs → 44, `npm run test:live`,
+  `npm run e2e:live` 6/6: RSVP syncs in ~5 ms, chat ~100 ms, offline message delivered ~1.5 s after restart).
+  Closed connections on `pagehide` (bfcache) so device counts stay accurate. Built the **demo video**
+  (`demo-video/`): capture script records real screens (two real browsers for the live chat), `demo.html` animates
+  them (Tandem tokens, Inter, lucide icons), `render.mjs` renders a silent 1080p60 MP4 via ffmpeg (29 s first cut; retimed to 40 s on request so labels are readable).
+  Note: `npm install` was needed after the merge (`@supabase/supabase-js` was missing, so the dev server showed only
+  the splash screen) — restart `npm run dev` after pulling.
+
 ### Status vs spec (update as you go: ✅ done · 🟡 partial · ⬜ todo)
 
 | Spec § | Feature | Status |
@@ -192,7 +224,7 @@ test/       vitest specs for services
 | 22 | Recommendation engine with explanations + factor breakdown | ✅ |
 | 23 | Community impact dashboard (demo-labelled, live counters) | ✅ |
 | 24 | Privacy controls, data export/delete, reporting | ✅ |
-| 25 | Tests for key workflows (38 vitest specs + `npm run e2e` headless-Chrome check of all 20 workflows + `npm run a11y`) | ✅ |
+| 25 | Tests for key workflows (44 vitest specs + `npm run e2e` (17 checks, all 20 workflows) + `npm run a11y` + `npm run e2e:live` + `npm run test:live`) | ✅ |
 | 29 | README (setup, architecture, algorithms, limitations) + root package.json proxy scripts | ✅ |
 
 ## 9. Next steps (keep this list current — top item = what to do next)
@@ -200,7 +232,10 @@ test/       vitest specs for services
 1. **Create the Google OAuth client id** (README → "Sign in with Google"), put it in `frontend/.env.local`, restart
    `npm run dev`, and test with a real account (add teammates/judges as test users or publish the consent screen).
    For a deployed demo, add its URL to *Authorised JavaScript origins*.
-2. Rehearse the updated single-page setup and event publishing flows. Reset demo data right before judging.
+2. Rehearse with the demo video (`demo-video/tandem-demo.mp4`, silent, 40 s). For a live multi-device demo: run
+   `npm run live` + `npm run dev -- --host`, open the network URL on a phone, sign in as different demo accounts,
+   chat. Reset demo data (resets everyone's shared world) right before judging.
+   If anything changes in the UI, re-run `node demo-video/capture.mjs` then `node demo-video/render.mjs`.
 3. Optional upgrades if time remains (in value order):
    - Configure the shared Supabase project and verify Google OAuth and Realtime with two browser profiles (README).
    - More seed groups and photos for venues that currently use the Calgary skyline.
@@ -225,7 +260,9 @@ test/       vitest specs for services
 
 ## 11. Known limitations (keep honest; mirror in README)
 
-- localStorage = single browser profile; no real multi-user sync (cross-tab sync only within one browser).
+- Without Tandem Live, localStorage = single browser profile (cross-tab sync only). With Tandem Live, devices on the
+  network share one demo world, but the server has no authentication (trusted network only) and conflicting edits to
+  the same record are last-writer-wins.
 - Demo-account/email sign-in and ID verification are simulated; no passwords or documents are stored. Google sign-in is
   real but the ID token is only checked in the browser (production: verify server-side).
 - Seeded events are fictional listings placed at real public Calgary venues (approximate coordinates).

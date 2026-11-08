@@ -1,0 +1,13 @@
+# Tandem with live multi-device sync: docker compose up --build  →  http://localhost:8787
+services:
+  tandem:
+    build: .
+    image: tandem-live
+    ports:
+      - "8787:8787"
+    volumes:
+      - tandem-data:/data
+    restart: unless-stopped
+
+volumes:
+  tandem-data:

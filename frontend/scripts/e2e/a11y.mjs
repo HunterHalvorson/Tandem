@@ -2,10 +2,10 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { launch } from './cdp.mjs'
+import { launch, SYNC_OFF } from './cdp.mjs'
 /** axe-core audit (WCAG 2.0/2.1/2.2 A + AA + best practices) of every main page. Dev server must be running: npm run a11y */
 const AXE = readFileSync(createRequire(import.meta.url).resolve('axe-core/axe.min.js'), 'utf8')
-const b = await launch({ profile: mkdtempSync(join(tmpdir(), 'tandem-a11y-')) })
+const b = await launch({ profile: mkdtempSync(join(tmpdir(), 'tandem-a11y-')), init: SYNC_OFF })
 const pages = ['/', '/discover', '/map', '/events/evt-sunrise-run-next', '/groups', '/groups/grp-sunrise-runners', '/leaderboard', '/explore-like-a-local', '/impact', '/login', '/signup', '/about']
 const authed = ['/dashboard', '/profile', '/settings', '/events/new', '/events/evt-study-hall/chat']
 const summary = {}

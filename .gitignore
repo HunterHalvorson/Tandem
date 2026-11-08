@@ -1,0 +1,8 @@
+.DS_Store
+node_modules
+# Tandem Live server data (shared demo world)
+server/data/
+# Demo video working files (regenerate with demo-video/capture.mjs and render.mjs)
+demo-video/shots/
+demo-video/frames/
+demo-video/data.js
