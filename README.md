@@ -37,9 +37,11 @@ npm run live     # terminal 1: Tandem Live on http://localhost:8787 (also prints
 npm run dev      # terminal 2: the app; it connects to http://<same host>:8787 automatically
 ```
 
-Phones on the same Wi-Fi: start the app with `npm run dev -- --host` and open the printed network URL.
-Or run everything in one container: `docker compose up --build` → http://localhost:8787 (the container serves the
-built app and the sync server, restarts automatically and keeps data in a volume).
+Other laptops and phones on the same Wi-Fi: serve the built app from Tandem Live itself, so there is one address —
+`npm run build`, then `npm run live`, and everyone opens `http://<this laptop's network IP>:8787` (printed at
+startup). Or run everything in one container: `docker compose up --build` → port 8787 (the container serves the built
+app and the sync server, restarts automatically and keeps data in a volume). With the dev server instead, run
+`cd frontend && npm run dev -- --host` (from the repo root `--host` doesn't reach Vite).
 
 **Fallback:** if the server isn't running or stops, the app keeps working in its normal browser-only mode (the chat
 badge shows *Live in this browser*). When the server comes back, the app reconnects, pushes changes made meanwhile
@@ -232,7 +234,7 @@ Map data © OpenStreetMap contributors · Leaflet · lucide icons · Inter (Rasm
 
 ## Demo video
 
-`demo-video/tandem-demo.mp4` is a silent 40-second walkthrough (sign-up → filters → map → join → live chat →
+`demo-video/tandem-demo.mp4` is a silent 60-second walkthrough (sign-up → filters → map → join → live chat →
 rating → accessibility). It is rendered from real app screens: `node demo-video/capture.mjs` (dev server running)
 records them, then `node demo-video/render.mjs` animates `demo-video/demo.html` frame by frame into the MP4
 (needs ffmpeg).

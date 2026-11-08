@@ -249,6 +249,24 @@ const PANELS = [
     stack: [['code-xml', 'React 19 + TypeScript'], ['zap', 'Vite · Tailwind CSS v4'], ['map', 'Leaflet · OpenStreetMap'], ['radio', 'Tandem Live (Node SSE)'], ['container', 'Docker'], ['database', 'Supabase · Postgres RLS'], ['shield-check', 'Google Identity'], ['mic', 'Web Speech API'], ['badge-check', 'Vitest · axe WCAG 2.2 AA']], stackAt: 38.2 },
 ]
 
+/* Pacing: the timeline above is authored on a 40 s base and stretched by K. Event times scale; animation
+   lengths (fades, reveals, ripples, panel entrances) stay fixed so motion stays crisp while holds get longer. */
+const K = 60 / 40
+for (const s of SHOTS) {
+  s.in *= K
+  s.scroll = s.scroll.map(([t, y]) => [t * K, y])
+  if (s.xf) s.xf = s.xf.map(([t, ...v]) => [t * K, ...v])
+  for (const p of s.patches ?? []) p.at *= K
+  if (s.typing) { s.typing.from *= K; s.typing.to *= K; s.typing.caret = s.typing.caret.map((x) => x * K) }
+}
+CAM.forEach((c) => { c[0] *= K })
+RINGS.forEach((r) => { r.from *= K; r.to *= K })
+CURSOR.forEach((c) => { c.from *= K; c.to *= K; c.kf = c.kf.map(([t, x, y]) => [t * K, x, y]) })
+CLICKS.forEach((v, i) => { CLICKS[i] = v * K })
+MODES.forEach((m) => { m.from *= K; m.to *= K })
+STEPS.forEach((st) => { st.from *= K; st.to *= K })
+PANELS.forEach((p) => { p.from *= K; p.to *= K; if (p.stackAt) p.stackAt *= K })
+
 /* ============================================================== build DOM */
 const $ = (id) => document.getElementById(id)
 $('logo').innerHTML = LOGO.replace('<svg ', '<svg width="64" height="40" ')
@@ -497,7 +515,7 @@ function seek(t) {
   }
 }
 window.seek = seek
-window.DURATION = 40.0
+window.DURATION = 40 * K
 
 Promise.all([...images].map((img) => (img.decode ? img.decode().catch(() => {}) : null)).concat([document.fonts.ready])).then(() => {
   seek(0)

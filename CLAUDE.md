@@ -135,6 +135,17 @@ test/       vitest specs for services
 12. **2026-11-07** — "seems too quick, could we slow it down so that the info is easier to read … but not too much"
     → retimed the video from 29 s to 40 s (each callout ≥ ~1 s, short pauses between steps).
 
+13. **2026-11-07** — Slide assets (title + logo) on the Desktop (`~/Desktop/Tandem Slide Assets`); a Steve-Jobs-style
+    talk-over for the video after the join (how/why/tech, not narration of the screen); then "make the demo last
+    longer … 1 minute" → video stretched to 60 s (`K = 60 / 40` in demo.html; animation lengths unchanged).
+
+14. **2026-11-07** — Talk-over script for the 60 s clip (how/why/tech, with transitions), a tech-stack Q&A prep page
+    (private Artifact "Tandem Judging Prep"), and a Devpost elevator pitch.
+
+15. **2026-11-07** — Devpost needs a 2–5 min project demo video (submissions close **Nov 8, 11:30 AM**). Asked for a
+    two-person script + animated slides, then asked whether the team's existing deck and script are enough → yes; keep
+    their deck/script, just check the length is ≥ 2:00 and fix the slide-6 typo.
+
 ## 8. Change log
 
 - **2026-11-07 (session 1)** — Built the whole app on top of the teammate's Vite/React scaffold in `frontend/`
@@ -199,7 +210,7 @@ test/       vitest specs for services
   `npm run e2e:live` 6/6: RSVP syncs in ~5 ms, chat ~100 ms, offline message delivered ~1.5 s after restart).
   Closed connections on `pagehide` (bfcache) so device counts stay accurate. Built the **demo video**
   (`demo-video/`): capture script records real screens (two real browsers for the live chat), `demo.html` animates
-  them (Tandem tokens, Inter, lucide icons), `render.mjs` renders a silent 1080p60 MP4 via ffmpeg (29 s first cut; retimed to 40 s on request so labels are readable).
+  them (Tandem tokens, Inter, lucide icons), `render.mjs` renders a silent 1080p60 MP4 via ffmpeg (29 s first cut → 40 s → 60 s on request; pacing set by `K` in demo.html).
   Note: `npm install` was needed after the merge (`@supabase/supabase-js` was missing, so the dev server showed only
   the splash screen) — restart `npm run dev` after pulling.
 
@@ -229,19 +240,25 @@ test/       vitest specs for services
 
 ## 9. Next steps (keep this list current — top item = what to do next)
 
-1. **Create the Google OAuth client id** (README → "Sign in with Google"), put it in `frontend/.env.local`, restart
+1. **Devpost submission — closes Nov 8, 11:30 AM.** Record the 2–5 min demo video with the team's own deck + script
+   (Google Slides "Code the Change - Presentation", team LeGroup: Falah Sheikh, Hunter Halvorson; slide 5 is a faded
+   frame of the sign-up screen that leads into the demo — live app or `demo-video/tandem-demo.mp4`). Time a run-through
+   (must be ≥ 2:00), fix slide 6 ("Creates connection where Connects people…"), upload to YouTube as Unlisted or Public
+   (not Private). Title format: `TEAM ID - LeGroup - Tandem`. Judging: Nov 8, 12:45–2:55 PM; finals 3:10–3:55 PM.
+2. **Create the Google OAuth client id** (README → "Sign in with Google"), put it in `frontend/.env.local`, restart
    `npm run dev`, and test with a real account (add teammates/judges as test users or publish the consent screen).
    For a deployed demo, add its URL to *Authorised JavaScript origins*.
-2. Rehearse with the demo video (`demo-video/tandem-demo.mp4`, silent, 40 s). For a live multi-device demo: run
-   `npm run live` + `npm run dev -- --host`, open the network URL on a phone, sign in as different demo accounts,
-   chat. Reset demo data (resets everyone's shared world) right before judging.
+3. Rehearse with the demo video (`demo-video/tandem-demo.mp4`, silent, 60 s). For a live multi-device demo: run
+   `npm run build` then `npm run live` (or `docker compose up --build`) and have every device open
+   `http://<laptop network IP>:8787`; sign in as different demo accounts, join the same event, chat. GitHub Pages
+   can't host this (static only). Remote teammate: tunnel port 8787 or deploy the Dockerfile to a Node host. Reset demo data (resets everyone's shared world) right before judging.
    If anything changes in the UI, re-run `node demo-video/capture.mjs` then `node demo-video/render.mjs`.
-3. Optional upgrades if time remains (in value order):
+4. Optional upgrades if time remains (in value order):
    - Configure the shared Supabase project and verify Google OAuth and Realtime with two browser profiles (README).
    - More seed groups and photos for venues that currently use the Calgary skyline.
    - French UI strings (Calgary/Canada bilingual audience), PWA install + offline shell.
    - Host-side tools: QR check-in, waitlist when an event is full, recurring-event creation.
-4. Keep `npm test`, `npm run build`, `npm run e2e` and `npm run a11y` green after any change (dev server must be
+5. Keep `npm test`, `npm run build`, `npm run e2e` and `npm run a11y` green after any change (dev server must be
    running for e2e/a11y: `npm run dev` in another terminal).
 
 ## 10. Demo prep checklist (spec §27 story)
